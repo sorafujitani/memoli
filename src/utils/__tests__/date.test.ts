@@ -91,7 +91,7 @@ describe("isDateInRange", () => {
 describe("getRangeFileName", () => {
   test("returns correct file name", () => {
     expect(getRangeFileName("2026-01-09", "2026-01-12")).toBe(
-      "2026-01-09_2026-01-12.md"
+      "2026-01-09_2026-01-12.md",
     );
   });
 });

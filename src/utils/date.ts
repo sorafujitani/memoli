@@ -50,7 +50,7 @@ export function parseDateStr(dateStr: string): Date | null {
 export function isDateInRange(
   target: string,
   start: string,
-  end: string
+  end: string,
 ): boolean {
   const targetDate = parseDateStr(target);
   const startDate = parseDateStr(start);
@@ -68,7 +68,7 @@ export function getRangeFileName(startDate: string, endDate: string): string {
 }
 
 export function parseRangeFileName(
-  fileName: string
+  fileName: string,
 ): { start: string; end: string } | null {
   const regex = /^(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})\.md$/;
   const match = fileName.match(regex);

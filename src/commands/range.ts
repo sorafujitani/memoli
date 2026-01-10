@@ -14,7 +14,7 @@ export interface RangeOptions {
 export async function range(
   startDate: string,
   endDate: string,
-  options: RangeOptions = {}
+  options: RangeOptions = {},
 ): Promise<void> {
   if (!startDate || !endDate) {
     console.error("Usage: memoli range <start-date> <end-date>");

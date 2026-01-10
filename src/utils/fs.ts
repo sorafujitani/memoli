@@ -42,7 +42,7 @@ export function getMonthDirPathForDate(dateStr: string): string {
 }
 
 export async function findRangeFileForDate(
-  targetDate: string
+  targetDate: string,
 ): Promise<string | null> {
   if (!existsSync(REPORTS_DIR)) {
     return null;
