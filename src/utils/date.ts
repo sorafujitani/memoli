@@ -28,9 +28,9 @@ export function parseDateStr(dateStr: string): Date | null {
   if (!match) {
     return null;
   }
-  const year = parseInt(match[1], 10);
-  const month = parseInt(match[2], 10);
-  const day = parseInt(match[3], 10);
+  const year = parseInt(match[1]!, 10);
+  const month = parseInt(match[2]!, 10);
+  const day = parseInt(match[3]!, 10);
 
   if (month < 1 || month > 12 || day < 1 || day > 31) {
     return null;
@@ -75,7 +75,7 @@ export function parseRangeFileName(
   if (!match) {
     return null;
   }
-  return { start: match[1], end: match[2] };
+  return { start: match[1]!, end: match[2]! };
 }
 
 export function getMonthDirNameForDate(dateStr: string): string {
