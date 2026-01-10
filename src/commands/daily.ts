@@ -1,4 +1,9 @@
-import { ensureDir, getMonthDirPath, getTodayFilePath } from "../utils/fs.ts";
+import {
+  ensureDir,
+  getMonthDirPath,
+  getTodayFilePath,
+  findRangeFileForDate,
+} from "../utils/fs.ts";
 import { getTodayDateStr } from "../utils/date.ts";
 import { loadTemplate } from "../utils/template.ts";
 
@@ -7,6 +12,14 @@ export interface DailyOptions {
 }
 
 export async function daily(options: DailyOptions = {}): Promise<void> {
+  const todayStr = getTodayDateStr();
+
+  const rangeFile = await findRangeFileForDate(todayStr);
+  if (rangeFile) {
+    console.log(`Range file exists: ${rangeFile}`);
+    return;
+  }
+
   await ensureDir(getMonthDirPath());
 
   const filePath = getTodayFilePath();
@@ -21,7 +34,7 @@ export async function daily(options: DailyOptions = {}): Promise<void> {
   if (options.template) {
     content = await loadTemplate(options.template);
   } else {
-    content = `# ${getTodayDateStr()}\n\n`;
+    content = `# ${todayStr}\n\n`;
   }
 
   await Bun.write(filePath, content);

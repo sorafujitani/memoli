@@ -5,6 +5,7 @@ import { daily } from "./src/commands/daily.ts";
 import { today } from "./src/commands/today.ts";
 import { init } from "./src/commands/init.ts";
 import { memo } from "./src/commands/memo.ts";
+import { range } from "./src/commands/range.ts";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -25,14 +26,19 @@ Usage:
   memoli <command> [options]
 
 Commands:
-  init         Initialize memoli directories
-  daily        Create today's memo file
-  today        Open today's memo in editor
-  memo <name>  Create or open a memo
-  help         Show this help message
+  init                     Initialize memoli directories
+  daily                    Create today's memo file
+  today                    Open today's memo in editor
+  memo <name>              Create or open a memo
+  range <start> <end>      Create or open a date range memo
+  help                     Show this help message
 
-Daily Options:
+Daily/Range Options:
   -t <name>     Use template from ~/.memoli/temp/<name>.md
+
+Range Format:
+  memoli range YYYY-MM-DD YYYY-MM-DD
+  Example: memoli range 2026-01-09 2026-01-12
 
 Global Options:
   -h, --help    Show help
@@ -64,6 +70,11 @@ async function main(): Promise<void> {
   } else if (command === "memo") {
     const name = commandArgs[0] ?? "";
     await memo(name);
+  } else if (command === "range") {
+    const startDate = commandArgs[0] ?? "";
+    const endDate = commandArgs[1] ?? "";
+    const template = parseOption(commandArgs, "-t");
+    await range(startDate, endDate, { template });
   } else {
     console.error(`Unknown command: ${command}`);
     process.exit(1);
