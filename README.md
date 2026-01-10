@@ -28,6 +28,19 @@ memoli today              # 今日の日報をエディタで開く
 - `-t` オプションで `~/.memoli/temp/<name>.md` をテンプレートとして使用できます
 - `today` は `$EDITOR` 環境変数で指定されたエディタを使用します（デフォルト: vi）
 
+### 日付範囲メモ
+
+連休や長期休暇など、複数日を1つのファイルで管理したい場合に使用します。
+
+```bash
+memoli range 2026-01-09 2026-01-12    # 日付範囲のメモを作成・開く
+memoli range 2026-01-09 2026-01-12 -t vacation  # テンプレートを使用
+```
+
+- 範囲メモは `~/.memoli/reports/YYYY-MM/YYYY-MM-DD_YYYY-MM-DD.md` に保存されます
+- 範囲内の日付で `memoli today` を実行すると、自動的に範囲ファイルを開きます
+- 範囲内の日付で `memoli daily` を実行すると、範囲ファイルが存在することを通知します
+
 ### メモ
 
 ```bash
@@ -80,9 +93,10 @@ bun run fmt         # フォーマット
 
 ```
 ~/.memoli/
-├── reports/          # 日報
+├── reports/          # 日報・範囲メモ
 │   └── YYYY-MM/
-│       └── YYYY-MM-DD.md
+│       ├── YYYY-MM-DD.md              # 日報
+│       └── YYYY-MM-DD_YYYY-MM-DD.md   # 範囲メモ
 ├── temp/             # テンプレート
 │   └── <name>.md
 └── memo/             # 通常メモ
