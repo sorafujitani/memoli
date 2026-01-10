@@ -2,6 +2,21 @@
 
 CLIでMarkdownメモを管理するツール。日報やメモを `~/.memoli` 配下で一元管理します。
 
+## インストール
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap fs0414/memoli
+brew install memoli
+```
+
+### npm
+
+```bash
+npm install -g @fs0414/memoli
+```
+
 ## 機能とコマンド
 
 ### 初期化
@@ -57,7 +72,9 @@ memoli --help
 memoli --version
 ```
 
-## 技術構成
+## 開発
+
+### 技術構成
 
 - **Runtime**: [Bun](https://bun.sh)
 - **Language**: TypeScript
@@ -65,22 +82,7 @@ memoli --version
 - **Linter**: oxlint
 - **Formatter**: oxfmt
 
-## インストール
-
-### Homebrew (macOS / Linux)
-
-```bash
-brew tap fs0414/memoli
-brew install memoli
-```
-
-### npm
-
-```bash
-npm install -g @fs0414/memoli
-```
-
-## 開発
+### コマンド
 
 ```bash
 bun run typecheck   # 型チェック
@@ -103,6 +105,6 @@ bun run fmt         # フォーマット
     └── <name>.md
 ```
 
-### ライセンス
+## ライセンス
 
 MIT
