@@ -18,12 +18,12 @@ test("-h shows help message", async () => {
 
 test("--version shows version", async () => {
   const result = await Bun.$`bun ${CLI_PATH} --version`.text();
-  expect(result).toContain("memoli v0.0.1");
+  expect(result).toContain("memoli v0.0.6");
 });
 
 test("-v shows version", async () => {
   const result = await Bun.$`bun ${CLI_PATH} -v`.text();
-  expect(result).toContain("memoli v0.0.1");
+  expect(result).toContain("memoli v0.0.6");
 });
 
 test("unknown command exits with error", async () => {
