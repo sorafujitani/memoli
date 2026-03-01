@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "memoli",
-      "dependencies": {
-        "@fs0414/memoli": "^0.0.1",
-      },
       "devDependencies": {
         "@types/bun": "latest",
         "@typescript/native-preview": "^7.0.0-dev.20251209.1",
@@ -17,8 +14,6 @@
     },
   },
   "packages": {
-    "@fs0414/memoli": ["@fs0414/memoli@0.0.1", "", { "bin": { "memoli": "bin/memoli" } }, "sha512-bWfKUxTefTdxgCdvTsaZNVs+JsC3V0s2VJASC5VvVSvbNkMj25QJfcqjZmUuUBX7HSy8nkjziwCyJWXixztCKQ=="],
-
     "@oxfmt/darwin-arm64": ["@oxfmt/darwin-arm64@0.17.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-OMv0tOb+xiwSZKjYbM6TwMSP5QwFJlBGQmEsk98QJ30sHhdyC//0UvGKuR0KZuzZW4E0+k0rHDmos1Z5DmBEkA=="],
 
     "@oxfmt/darwin-x64": ["@oxfmt/darwin-x64@0.17.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-trzidyzryKIdL/cLCYU9IwprgJegVBUrz1rqzOMe5is+qdgH/RxTCvhYUNFzxRHpil3g4QUYd2Ja831tc5Nehg=="],

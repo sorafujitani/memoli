@@ -9,9 +9,9 @@ export async function memo(name: string): Promise<void> {
     process.exit(1);
   }
 
-  await ensureDir(MEMO_DIR);
+  ensureDir(MEMO_DIR);
 
-  const filePath = join(MEMO_DIR, `${name}.md`);
+  let filePath = join(MEMO_DIR, `${name}.md`);
   const file = Bun.file(filePath);
 
   if (!(await file.exists())) {

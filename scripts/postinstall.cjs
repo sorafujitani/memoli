@@ -11,7 +11,7 @@ const { arch, platform } = require("node:os");
 const https = require("node:https");
 const { execSync } = require("node:child_process");
 
-const REPO = "fs0414/memoli";
+const REPO = "sorafujitani/memoli";
 const BIN_DIR = join(__dirname, "..", "bin");
 const BIN_PATH = join(BIN_DIR, "memoli-binary");
 
