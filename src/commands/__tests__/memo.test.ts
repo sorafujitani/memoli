@@ -1,16 +1,27 @@
-import { test, expect } from "bun:test";
-import { join } from "node:path";
+import { spawn } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const CLI_PATH = join(import.meta.dir, "../../../index.ts");
+import { expect, test } from "vitest";
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const CLI_PATH = join(currentDir, "../../../index.ts");
+
+const EXIT_FAILURE = 1;
 
 test("memo without name shows usage error", async () => {
-  const proc = Bun.spawn(["bun", CLI_PATH, "memo"], {
-    stdout: "pipe",
-    stderr: "pipe",
+  const { exitCode, stderr: stderrOutput } = await new Promise<{
+    exitCode: number;
+    stderr: string;
+  }>((resolve) => {
+    const proc = spawn("bun", [CLI_PATH, "memo"]);
+    let output = "";
+    proc.stderr.on("data", (chunk) => (output += chunk));
+    proc.on("close", (code) => {
+      resolve({ exitCode: code ?? EXIT_FAILURE, stderr: output });
+    });
   });
-  const exitCode = await proc.exited;
-  const stderr = await new Response(proc.stderr).text();
 
-  expect(exitCode).toBe(1);
-  expect(stderr).toContain("Usage: memoli memo <name>");
+  expect(exitCode).toBe(EXIT_FAILURE);
+  expect(stderrOutput).toContain("Usage: memoli memo <name>");
 });

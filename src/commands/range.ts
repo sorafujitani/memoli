@@ -1,71 +1,100 @@
-import { spawn } from "node:child_process";
+import { isValidDateStr, parseDateStr } from "../utils/date.ts";
+import { openInEditor } from "../utils/editor.ts";
 import {
   ensureDir,
-  getRangeFilePath,
   getMonthDirPathForDate,
+  getRangeFilePath,
 } from "../utils/fs.ts";
-import { isValidDateStr, parseDateStr } from "../utils/date.ts";
 import { loadTemplate } from "../utils/template.ts";
 
 export interface RangeOptions {
   template?: string;
 }
 
-export async function range(
-  startDate: string,
-  endDate: string,
-  options: RangeOptions = {},
-): Promise<void> {
-  if (!startDate || !endDate) {
-    console.error("Usage: memoli range <start-date> <end-date>");
-    console.error("Example: memoli range 2026-01-09 2026-01-12");
-    process.exit(1);
-  }
+const EXIT_FAILURE = 1;
 
-  if (!isValidDateStr(startDate)) {
-    console.error(`Invalid start date format: ${startDate}`);
+const validateDateFormat = (date: string, label: string): void => {
+  if (!isValidDateStr(date)) {
+    console.error(`Invalid ${label} date format: ${date}`);
     console.error("Expected format: YYYY-MM-DD");
-    process.exit(1);
+    process.exit(EXIT_FAILURE);
   }
+};
 
-  if (!isValidDateStr(endDate)) {
-    console.error(`Invalid end date format: ${endDate}`);
-    console.error("Expected format: YYYY-MM-DD");
-    process.exit(1);
+const validateDateOrder = (startDate: string, endDate: string): void => {
+  const start = parseDateStr(startDate);
+  const end = parseDateStr(endDate);
+
+  if (start === undefined || end === undefined) {
+    return;
   }
-
-  const start = parseDateStr(startDate)!;
-  const end = parseDateStr(endDate)!;
 
   if (start > end) {
     console.error("Start date must be before or equal to end date");
-    process.exit(1);
+    process.exit(EXIT_FAILURE);
   }
+};
+
+const validateRangeArgs = (startDate: string, endDate: string): void => {
+  if (startDate === "" || endDate === "") {
+    console.error("Usage: memoli range <start-date> <end-date>");
+    console.error("Example: memoli range 2026-01-09 2026-01-12");
+    process.exit(EXIT_FAILURE);
+  }
+
+  validateDateFormat(startDate, "start");
+  validateDateFormat(endDate, "end");
+  validateDateOrder(startDate, endDate);
+};
+
+const resolveContent = (
+  startDate: string,
+  endDate: string,
+  template: string | undefined,
+): Promise<string> | string =>
+  template === undefined
+    ? `# ${startDate} - ${endDate}\n\n`
+    : loadTemplate(template);
+
+interface RangeFileContext {
+  endDate: string;
+  filePath: string;
+  startDate: string;
+  template: string | undefined;
+}
+
+const ensureRangeFile = async (ctx: RangeFileContext): Promise<void> => {
+  const file = Bun.file(ctx.filePath);
+
+  if (await file.exists()) {
+    console.log(`Opening: ${ctx.filePath}`);
+  } else {
+    const content = await resolveContent(
+      ctx.startDate,
+      ctx.endDate,
+      ctx.template,
+    );
+    await Bun.write(ctx.filePath, content);
+    console.log(`Created: ${ctx.filePath}`);
+  }
+};
+
+export const range = async (
+  startDate: string,
+  endDate: string,
+  options: RangeOptions = {},
+): Promise<void> => {
+  validateRangeArgs(startDate, endDate);
 
   await ensureDir(getMonthDirPathForDate(startDate));
 
   const filePath = getRangeFilePath(startDate, endDate);
-  const file = Bun.file(filePath);
-
-  if (!(await file.exists())) {
-    let content: string;
-    if (options.template) {
-      content = await loadTemplate(options.template);
-    } else {
-      content = `# ${startDate} - ${endDate}\n\n`;
-    }
-    await Bun.write(filePath, content);
-    console.log(`Created: ${filePath}`);
-  } else {
-    console.log(`Opening: ${filePath}`);
-  }
-
-  const editor = process.env["EDITOR"] || "vi";
-  const child = spawn(editor, [filePath], {
-    stdio: "inherit",
+  await ensureRangeFile({
+    endDate,
+    filePath,
+    startDate,
+    template: options.template,
   });
 
-  child.on("exit", (code) => {
-    process.exit(code ?? 0);
-  });
-}
+  openInEditor(filePath);
+};

@@ -1,105 +1,120 @@
 #!/usr/bin/env node
 
-const {
-  createWriteStream,
-  chmodSync,
-  existsSync,
-  mkdirSync,
-} = require("node:fs");
-const { join } = require("node:path");
-const { arch, platform } = require("node:os");
+const fs = require("node:fs");
+const path = require("node:path");
+const os = require("node:os");
 const https = require("node:https");
-const { execSync } = require("node:child_process");
 
 const REPO = "sorafujitani/memoli";
-const BIN_DIR = join(__dirname, "..", "bin");
-const BIN_PATH = join(BIN_DIR, "memoli-binary");
+const BIN_DIR = path.join(__dirname, "..", "bin");
+const BIN_PATH = path.join(BIN_DIR, "memoli-binary");
 
-function getPlatformKey() {
-  const p = platform();
-  const a = arch();
+const MAX_REDIRECTS = 5;
+const HTTP_REDIRECT_MIN = 300;
+const HTTP_REDIRECT_MAX = 400;
+const HTTP_OK = 200;
+const FILE_MODE = 0o755;
 
-  if (p === "darwin" && a === "arm64") return "darwin-arm64";
-  if (p === "darwin" && a === "x64") return "darwin-x64";
-  if (p === "linux" && a === "x64") return "linux-x64";
-  if (p === "linux" && a === "arm64") return "linux-arm64";
+/** @type {Record<string, string>} */
+const PLATFORM_MAP = {
+  "darwin-arm64": "darwin-arm64",
+  "darwin-x64": "darwin-x64",
+  "linux-arm64": "linux-arm64",
+  "linux-x64": "linux-x64",
+};
 
-  return null;
-}
+/** @returns {string | undefined} */
+const getPlatformKey = () => {
+  const key = `${os.platform()}-${os.arch()}`;
+  return PLATFORM_MAP[key];
+};
 
-function getPackageVersion() {
+const getPackageVersion = () => {
   const pkg = require("../package.json");
   return pkg.version;
-}
+};
 
-function downloadFile(url, dest) {
-  return new Promise((resolve, reject) => {
-    const follow = (url, redirects = 0) => {
-      if (redirects > 5) {
+const downloadFile = (targetUrl, dest) =>
+  new Promise((resolve, reject) => {
+    const follow = (currentUrl, redirects = 0) => {
+      if (redirects > MAX_REDIRECTS) {
         reject(new Error("Too many redirects"));
         return;
       }
 
       https
-        .get(url, { headers: { "User-Agent": "memoli-installer" } }, (res) => {
-          if (
-            res.statusCode >= 300 &&
-            res.statusCode < 400 &&
-            res.headers.location
-          ) {
-            follow(res.headers.location, redirects + 1);
-            return;
-          }
+        .get(
+          String(currentUrl),
+          { headers: { "User-Agent": "memoli-installer" } },
+          (res) => {
+            if (
+              res.statusCode >= HTTP_REDIRECT_MIN &&
+              res.statusCode < HTTP_REDIRECT_MAX &&
+              res.headers.location !== undefined &&
+              res.headers.location !== ""
+            ) {
+              follow(res.headers.location, redirects + 1);
+              return;
+            }
 
-          if (res.statusCode !== 200) {
-            reject(new Error(`Failed to download: ${res.statusCode}`));
-            return;
-          }
+            if (res.statusCode !== HTTP_OK) {
+              reject(
+                new Error(`Failed to download: ${String(res.statusCode)}`),
+              );
+              return;
+            }
 
-          const file = createWriteStream(dest);
-          res.pipe(file);
-          file.on("finish", () => {
-            file.close();
-            resolve();
-          });
-          file.on("error", reject);
-        })
+            const file = fs.createWriteStream(String(dest));
+            res.pipe(file);
+            file.on("finish", () => {
+              file.close();
+              resolve();
+            });
+            file.on("error", reject);
+          },
+        )
         .on("error", reject);
     };
 
-    follow(url);
+    follow(targetUrl);
   });
-}
 
-async function main() {
-  const platformKey = getPlatformKey();
-
-  if (!platformKey) {
-    console.log(`Unsupported platform: ${platform()}-${arch()}`);
-    console.log("memoli binary not installed. You can build from source.");
-    process.exit(0);
+const ensureBinDir = () => {
+  if (!fs.existsSync(BIN_DIR)) {
+    fs.mkdirSync(BIN_DIR, { recursive: true });
   }
+};
 
+const buildDownloadUrl = (platformKey) => {
   const version = getPackageVersion();
   const binaryName = `memoli-${platformKey}`;
-  const url = `https://github.com/${REPO}/releases/download/v${version}/${binaryName}`;
+  return `https://github.com/${REPO}/releases/download/v${version}/${binaryName}`;
+};
+
+const installBinary = async (platformKey) => {
+  const url = buildDownloadUrl(platformKey);
 
   console.log(`Downloading memoli binary for ${platformKey}...`);
 
-  if (!existsSync(BIN_DIR)) {
-    mkdirSync(BIN_DIR, { recursive: true });
-  }
+  ensureBinDir();
 
   try {
     await downloadFile(url, BIN_PATH);
-    chmodSync(BIN_PATH, 0o755);
+    fs.chmodSync(BIN_PATH, FILE_MODE);
     console.log("memoli binary installed successfully!");
-  } catch (err) {
-    console.error(`Failed to download binary: ${err.message}`);
-    console.log("You can manually download from:");
-    console.log(`  ${url}`);
-    process.exit(0);
+  } catch (error) {
+    console.error(`Failed to download binary: ${error.message}`);
+    console.log(`You can manually download from:\n  ${url}`);
   }
-}
+};
 
-main();
+/** @type {string | undefined} */
+const platformKey = getPlatformKey();
+
+if (platformKey === undefined) {
+  console.log(`Unsupported platform: ${os.platform()}-${os.arch()}`);
+  console.log("memoli binary not installed. You can build from source.");
+} else {
+  // eslint-disable-next-line unicorn/prefer-top-level-await -- CJS does not support top-level await
+  void installBinary(platformKey);
+}

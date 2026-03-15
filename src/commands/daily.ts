@@ -1,21 +1,45 @@
+import { getTodayDateStr } from "../utils/date.ts";
 import {
   ensureDir,
+  findRangeFileForDate,
   getMonthDirPath,
   getTodayFilePath,
-  findRangeFileForDate,
 } from "../utils/fs.ts";
-import { getTodayDateStr } from "../utils/date.ts";
 import { loadTemplate } from "../utils/template.ts";
 
 export interface DailyOptions {
   template?: string;
 }
 
-export async function daily(options: DailyOptions = {}): Promise<void> {
+const resolveContent = (
+  todayStr: string,
+  template: string | undefined,
+): Promise<string> | string =>
+  template === undefined ? `# ${todayStr}\n\n` : loadTemplate(template);
+
+const createDailyFile = async (
+  filePath: string,
+  todayStr: string,
+  template: string | undefined,
+): Promise<void> => {
+  const content = await resolveContent(todayStr, template);
+  await Bun.write(filePath, content);
+  console.log(`Created: ${filePath}`);
+};
+
+const fileAlreadyExists = async (filePath: string): Promise<boolean> => {
+  const exists = await Bun.file(filePath).exists();
+  if (exists) {
+    console.log(`Already exists: ${filePath}`);
+  }
+  return exists;
+};
+
+export const daily = async (options: DailyOptions = {}): Promise<void> => {
   const todayStr = getTodayDateStr();
 
-  const rangeFile = await findRangeFileForDate(todayStr);
-  if (rangeFile) {
+  const rangeFile = findRangeFileForDate(todayStr);
+  if (rangeFile !== undefined) {
     console.log(`Range file exists: ${rangeFile}`);
     return;
   }
@@ -23,20 +47,9 @@ export async function daily(options: DailyOptions = {}): Promise<void> {
   await ensureDir(getMonthDirPath());
 
   const filePath = getTodayFilePath();
-  const file = Bun.file(filePath);
-
-  if (await file.exists()) {
-    console.log(`Already exists: ${filePath}`);
+  if (await fileAlreadyExists(filePath)) {
     return;
   }
 
-  let content: string;
-  if (options.template) {
-    content = await loadTemplate(options.template);
-  } else {
-    content = `# ${todayStr}\n\n`;
-  }
-
-  await Bun.write(filePath, content);
-  console.log(`Created: ${filePath}`);
-}
+  await createDailyFile(filePath, todayStr, options.template);
+};

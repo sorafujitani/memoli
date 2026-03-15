@@ -1,18 +1,22 @@
-import { test, expect, beforeEach, afterEach } from "bun:test";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { rmSync, mkdirSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
-const CLI_PATH = join(import.meta.dir, "../../../index.ts");
+import { expect, test } from "vitest";
+
+const execFileAsync = promisify(execFile);
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const CLI_PATH = join(currentDir, "../../../index.ts");
 
 test("daily creates a new file", async () => {
-  const result = await Bun.$`bun ${CLI_PATH} daily`.text();
+  const { stdout } = await execFileAsync("bun", [CLI_PATH, "daily"]);
   // Already exists, Created, or Range file exists
-  expect(result).toMatch(/(Created|Already exists|Range file exists):/);
+  expect(stdout).toMatch(/(Created|Already exists|Range file exists):/);
 });
 
 test("daily shows 'Already exists' when file exists", async () => {
-  await Bun.$`bun ${CLI_PATH} daily`;
-  const result = await Bun.$`bun ${CLI_PATH} daily`.text();
-  expect(result).toMatch(/(Already exists|Range file exists):/);
+  await execFileAsync("bun", [CLI_PATH, "daily"]);
+  const { stdout } = await execFileAsync("bun", [CLI_PATH, "daily"]);
+  expect(stdout).toMatch(/(Already exists|Range file exists):/);
 });

@@ -10,6 +10,11 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
 
+    "types": ["bun"],
+    "paths": {
+      "vitest": ["./node_modules/@voidzero-dev/vite-plus-test/dist/index.d.ts"]
+    },
+
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
@@ -18,6 +23,6 @@
 
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-  },
+    "noPropertyAccessFromIndexSignature": false
+  }
 }

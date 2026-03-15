@@ -1,7 +1,8 @@
-import { test, expect } from "bun:test";
-import { getTodayFilePath, getMonthDirPath } from "../fs.ts";
+import { expect, test } from "vitest";
+
 import { REPORTS_DIR } from "../../config.ts";
-import { getTodayDateStr, getMonthDirName } from "../date.ts";
+import { getMonthDirName, getTodayDateStr } from "../date.ts";
+import { getMonthDirPath, getTodayFilePath } from "../fs.ts";
 
 test("getTodayFilePath returns correct path with month directory", () => {
   const result = getTodayFilePath();

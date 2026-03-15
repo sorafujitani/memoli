@@ -3,7 +3,10 @@
   "version": "0.0.6",
   "description": "CLI markdown memo manager",
   "license": "MIT",
-  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sorafujitani/memoli.git"
+  },
   "bin": {
     "memoli": "./bin/memoli"
   },
@@ -11,26 +14,20 @@
     "bin",
     "scripts/postinstall.cjs"
   ],
+  "type": "module",
   "scripts": {
     "postinstall": "node scripts/postinstall.cjs",
     "build": "bun run scripts/build.ts",
     "release": "bun run scripts/release.ts",
-    "typecheck": "tsgo --noEmit",
-    "lint": "oxlint 'src/**/*.ts' 'index.ts'",
-    "lint:fix": "oxlint 'src/**/*.ts' 'index.ts' --fix",
-    "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "check": "NODE_OPTIONS='--experimental-strip-types --no-warnings' vp check",
+    "test": "vp test",
+    "lint": "NODE_OPTIONS='--experimental-strip-types --no-warnings' vp lint",
+    "fmt": "NODE_OPTIONS='--experimental-strip-types --no-warnings' vp fmt",
+    "fmt:check": "NODE_OPTIONS='--experimental-strip-types --no-warnings' vp fmt --check"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sorafujitani/memoli.git"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/bun": "latest",
-    "@typescript/native-preview": "^7.0.0-dev.20251209.1",
-    "oxfmt": "^0.17.0",
-    "oxlint": "^1.32.0",
-    "oxlint-tsgolint": "^0.8.4"
-  },
-  "dependencies": {}
+    "vite-plus": "^0.1.11"
+  }
 }

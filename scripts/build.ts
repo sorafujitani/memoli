@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
-import { $ } from "bun";
 import { mkdir } from "node:fs/promises";
+
+import { $ } from "bun";
 
 const targets = [
   { name: "darwin-x64", target: "bun-darwin-x64" },
@@ -21,6 +22,7 @@ for (const { name, target } of targets) {
   const outfile = `${distDir}/memoli-${name}`;
   console.log(`Building for ${name}...`);
 
+  // eslint-disable-next-line no-await-in-loop -- sequential builds required for cross-compilation
   await $`bun build ${entrypoint} --compile --minify --target ${target} --outfile ${outfile}`;
 
   console.log(`  -> ${outfile}\n`);

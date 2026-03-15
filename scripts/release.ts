@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 
-import { $ } from "bun";
-import { mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { mkdir } from "node:fs/promises";
+
+import { $ } from "bun";
 
 const targets = [
   { name: "darwin-x64", target: "bun-darwin-x64" },
@@ -24,11 +25,11 @@ for (const { name, target } of targets) {
   const outfile = `${distDir}/memoli-${name}`;
   console.log(`Building for ${name}...`);
 
+  // eslint-disable-next-line no-await-in-loop -- sequential builds required for cross-compilation
   await $`bun build ${entrypoint} --compile --minify --target ${target} --outfile ${outfile}`;
 
-  // Calculate SHA256
-  const file = Bun.file(outfile);
-  const buffer = await file.arrayBuffer();
+  // eslint-disable-next-line no-await-in-loop -- depends on sequential build above
+  const buffer = await Bun.file(outfile).arrayBuffer();
   const hash = createHash("sha256").update(Buffer.from(buffer)).digest("hex");
   checksums[name] = hash;
 

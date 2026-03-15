@@ -6,19 +6,18 @@ CLI markdown memo manager. Manages daily reports and memos under `~/.memoli`.
 
 - **Runtime**: Bun (not Node.js)
 - **Language**: TypeScript
-- **Type Checker**: tsgo (`@typescript/native-preview`)
-- **Linter**: oxlint
-- **Formatter**: oxfmt
+- **Toolchain**: Vite+ (`vp` CLI) — lint, format, typecheck, test を統合
+- **Build**: bun build --compile (ネイティブバイナリ生成)
 
 ## Commands
 
 ```bash
-bun test            # Run tests
-bun run typecheck   # Type check with tsgo
-bun run lint        # Lint with oxlint
-bun run fmt         # Format with oxfmt
-bun run build       # Build (scripts/build.ts)
-bun run release     # Release (scripts/release.ts)
+vp check              # Format + Lint + Type check (1パス)
+vp test               # Run tests (vitest)
+vp lint               # Lint with oxlint
+vp fmt                # Format with oxfmt
+bun run build         # Build (scripts/build.ts)
+bun run release       # Release (scripts/release.ts)
 ```
 
 ## Project Structure
@@ -36,7 +35,7 @@ scripts/          # Build and release scripts
 
 ## Development Guidelines
 
-- Use `bun` for all runtime, testing, and package management tasks
+- Use `bun` for all runtime and package management tasks
 - Use `Bun.file` instead of `node:fs` readFile/writeFile
-- Tests use `bun:test` (`import { test, expect } from "bun:test"`)
+- Tests use vitest (`import { test, expect } from "vitest"`)
 - No external dependencies — keep `dependencies` empty in package.json

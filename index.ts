@@ -1,25 +1,23 @@
 #!/usr/bin/env bun
 
-import { VERSION } from "./src/config.ts";
 import { daily } from "./src/commands/daily.ts";
-import { today } from "./src/commands/today.ts";
 import { init } from "./src/commands/init.ts";
 import { memo } from "./src/commands/memo.ts";
 import { range } from "./src/commands/range.ts";
+import { today } from "./src/commands/today.ts";
+import { VERSION } from "./src/config.ts";
 
-const args = process.argv.slice(2);
-const command = args[0];
-const commandArgs = args.slice(1);
+const EXIT_FAILURE = 1;
 
-function parseOption(args: string[], flag: string): string | undefined {
-  const index = args.indexOf(flag);
-  if (index !== -1 && index + 1 < args.length) {
-    return args[index + 1];
+const parseOption = (params: string[], flag: string): string | undefined => {
+  const index = params.indexOf(flag);
+  if (index !== -1 && index + 1 < params.length) {
+    return params[index + 1];
   }
   return undefined;
-}
+};
 
-function showHelp(): void {
+const showHelp = (): void => {
   console.log(`memoli - CLI markdown memo manager
 
 Usage:
@@ -44,41 +42,51 @@ Global Options:
   -h, --help    Show help
   -v, --version Show version
 `);
-}
+};
 
-function showVersion(): void {
+const showVersion = (): void => {
   console.log(`memoli v${VERSION}`);
-}
+};
 
-async function main(): Promise<void> {
-  if (
-    !command ||
-    command === "help" ||
-    command === "-h" ||
-    command === "--help"
-  ) {
-    showHelp();
-  } else if (command === "-v" || command === "--version") {
-    showVersion();
-  } else if (command === "init") {
-    await init();
-  } else if (command === "daily") {
+const commands: Record<string, (commandArgs: string[]) => Promise<void>> = {
+  daily: async (commandArgs) => {
     const template = parseOption(commandArgs, "-t");
     await daily({ template });
-  } else if (command === "today") {
-    await today();
-  } else if (command === "memo") {
-    const name = commandArgs[0] ?? "";
+  },
+  init: async () => {
+    await init();
+  },
+  memo: async (commandArgs) => {
+    const [name = ""] = commandArgs;
     await memo(name);
-  } else if (command === "range") {
-    const startDate = commandArgs[0] ?? "";
-    const endDate = commandArgs[1] ?? "";
+  },
+  range: async (commandArgs) => {
+    const [startDate = "", endDate = ""] = commandArgs;
     const template = parseOption(commandArgs, "-t");
     await range(startDate, endDate, { template });
-  } else {
-    console.error(`Unknown command: ${command}`);
-    process.exit(1);
-  }
-}
+  },
+  today: async () => {
+    await today();
+  },
+};
 
-main();
+const helpCommands = new Set(["help", "-h", "--help"]);
+const versionCommands = new Set(["-v", "--version"]);
+
+const ARGV_OFFSET = 2;
+const args = process.argv.slice(ARGV_OFFSET);
+const [command, ...commandArgs] = args;
+
+if (command === undefined || helpCommands.has(command)) {
+  showHelp();
+} else if (versionCommands.has(command)) {
+  showVersion();
+} else if (command in commands) {
+  const handler = commands[command];
+  if (handler !== undefined) {
+    await handler(commandArgs);
+  }
+} else {
+  console.error(`Unknown command: ${command}`);
+  process.exit(EXIT_FAILURE);
+}

@@ -1,51 +1,75 @@
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { readdirSync, existsSync } from "node:fs";
+
 import { MEMOLI_DIR, REPORTS_DIR } from "../config.ts";
 import {
-  getTodayDateStr,
   getMonthDirName,
   getMonthDirNameForDate,
   getRangeFileName,
-  parseRangeFileName,
+  getTodayDateStr,
   isDateInRange,
+  parseRangeFileName,
 } from "./date.ts";
 
-export async function ensureMemoliDir(): Promise<void> {
+export const ensureMemoliDir = async (): Promise<void> => {
   const dir = Bun.file(MEMOLI_DIR);
-  if (!(await dir.exists())) {
-    await Bun.$`mkdir -p ${MEMOLI_DIR}`;
+  if (await dir.exists()) {
+    return;
   }
-}
+  await Bun.$`mkdir -p ${MEMOLI_DIR}`;
+};
 
-export async function ensureDir(path: string): Promise<void> {
+export const ensureDir = async (path: string): Promise<void> => {
   const dir = Bun.file(path);
-  if (!(await dir.exists())) {
-    await Bun.$`mkdir -p ${path}`;
+  if (await dir.exists()) {
+    return;
   }
-}
+  await Bun.$`mkdir -p ${path}`;
+};
 
-export function getMonthDirPath(): string {
-  return join(REPORTS_DIR, getMonthDirName());
-}
+export const getMonthDirPath = (): string =>
+  join(REPORTS_DIR, getMonthDirName());
 
-export function getTodayFilePath(): string {
-  return join(getMonthDirPath(), `${getTodayDateStr()}.md`);
-}
+export const getTodayFilePath = (): string =>
+  join(getMonthDirPath(), `${getTodayDateStr()}.md`);
 
-export function getRangeFilePath(startDate: string, endDate: string): string {
+export const getRangeFilePath = (
+  startDate: string,
+  endDate: string,
+): string => {
   const monthDir = join(REPORTS_DIR, getMonthDirNameForDate(startDate));
   return join(monthDir, getRangeFileName(startDate, endDate));
-}
+};
 
-export function getMonthDirPathForDate(dateStr: string): string {
-  return join(REPORTS_DIR, getMonthDirNameForDate(dateStr));
-}
+export const getMonthDirPathForDate = (dateStr: string): string =>
+  join(REPORTS_DIR, getMonthDirNameForDate(dateStr));
 
-export async function findRangeFileForDate(
+const findMatchingRangeFile = (
+  monthPath: string,
   targetDate: string,
-): Promise<string | null> {
+): string | undefined => {
+  const files = readdirSync(monthPath, { withFileTypes: true })
+    .filter((dirent) => dirent.isFile())
+    .map((dirent) => dirent.name);
+
+  for (const file of files) {
+    const parsed = parseRangeFileName(file);
+    if (
+      parsed !== undefined &&
+      isDateInRange(targetDate, parsed.start, parsed.end)
+    ) {
+      return join(monthPath, file);
+    }
+  }
+
+  return undefined;
+};
+
+export const findRangeFileForDate = (
+  targetDate: string,
+): string | undefined => {
   if (!existsSync(REPORTS_DIR)) {
-    return null;
+    return undefined;
   }
 
   const monthDirs = readdirSync(REPORTS_DIR, { withFileTypes: true })
@@ -53,18 +77,14 @@ export async function findRangeFileForDate(
     .map((dirent) => dirent.name);
 
   for (const monthDir of monthDirs) {
-    const monthPath = join(REPORTS_DIR, monthDir);
-    const files = readdirSync(monthPath, { withFileTypes: true })
-      .filter((dirent) => dirent.isFile())
-      .map((dirent) => dirent.name);
-
-    for (const file of files) {
-      const parsed = parseRangeFileName(file);
-      if (parsed && isDateInRange(targetDate, parsed.start, parsed.end)) {
-        return join(monthPath, file);
-      }
+    const result = findMatchingRangeFile(
+      join(REPORTS_DIR, monthDir),
+      targetDate,
+    );
+    if (result !== undefined) {
+      return result;
     }
   }
 
-  return null;
-}
+  return undefined;
+};
