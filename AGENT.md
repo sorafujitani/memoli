@@ -35,24 +35,43 @@ Create a new task.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `title` | string | yes | Task title |
-| `priority` | `"high"` \| `"medium"` \| `"low"` | no | Priority level |
-| `tags` | string[] | no | Tags for categorization |
-| `dueDate` | string | no | Due date in `YYYY-MM-DD` format |
-| `memo` | string | no | Name of a linked memo file (without `.md`) |
+| Name       | Type                              | Required | Description                                |
+| ---------- | --------------------------------- | -------- | ------------------------------------------ |
+| `title`    | string                            | yes      | Task title                                 |
+| `priority` | `"high"` \| `"medium"` \| `"low"` | no       | Priority level                             |
+| `tags`     | string[]                          | no       | Tags for categorization                    |
+| `dueDate`  | string                            | no       | Due date in `YYYY-MM-DD` format            |
+| `memo`     | string                            | no       | Name of a linked memo file (without `.md`) |
 
 **Returns:** Task object.
 
 **Example call:**
+
 ```json
-{ "name": "task_add", "arguments": { "title": "Fix login bug", "priority": "high", "tags": ["bugfix"], "dueDate": "2026-04-01" } }
+{
+  "name": "task_add",
+  "arguments": {
+    "title": "Fix login bug",
+    "priority": "high",
+    "tags": ["bugfix"],
+    "dueDate": "2026-04-01"
+  }
+}
 ```
 
 **Example response:**
+
 ```json
-{ "id": "a1b2c3d4", "title": "Fix login bug", "status": "todo", "priority": "high", "tags": ["bugfix"], "dueDate": "2026-04-01", "createdAt": "2026-03-25T10:00:00.000Z", "updatedAt": "2026-03-25T10:00:00.000Z" }
+{
+  "id": "a1b2c3d4",
+  "title": "Fix login bug",
+  "status": "todo",
+  "priority": "high",
+  "tags": ["bugfix"],
+  "dueDate": "2026-04-01",
+  "createdAt": "2026-03-25T10:00:00.000Z",
+  "updatedAt": "2026-03-25T10:00:00.000Z"
+}
 ```
 
 ---
@@ -63,20 +82,22 @@ List tasks with optional filters. Returns all tasks if no filters given.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `status` | string[] | no | Filter by status. Values: `"todo"`, `"doing"`, `"done"`, `"blocked"` |
-| `tag` | string | no | Filter by a single tag |
-| `dueDate` | string | no | Filter by due date (`YYYY-MM-DD`) |
+| Name      | Type     | Required | Description                                                          |
+| --------- | -------- | -------- | -------------------------------------------------------------------- |
+| `status`  | string[] | no       | Filter by status. Values: `"todo"`, `"doing"`, `"done"`, `"blocked"` |
+| `tag`     | string   | no       | Filter by a single tag                                               |
+| `dueDate` | string   | no       | Filter by due date (`YYYY-MM-DD`)                                    |
 
 **Returns:** Array of Task objects.
 
 **Example — get active tasks:**
+
 ```json
 { "name": "task_list", "arguments": { "status": ["todo", "doing"] } }
 ```
 
 **Example — get tasks due today tagged "work":**
+
 ```json
 { "name": "task_list", "arguments": { "tag": "work", "dueDate": "2026-03-25" } }
 ```
@@ -89,9 +110,9 @@ Get a single task by ID. Supports **partial prefix match** — you only need eno
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `id` | string | yes | Task ID (full or partial prefix) |
+| Name | Type   | Required | Description                      |
+| ---- | ------ | -------- | -------------------------------- |
+| `id` | string | yes      | Task ID (full or partial prefix) |
 
 **Returns:** Task object, or error if not found.
 
@@ -103,28 +124,33 @@ Update a task's properties or status. Only provided fields are updated; omitted 
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `id` | string | yes | Task ID (full or partial prefix) |
-| `title` | string | no | New title |
-| `status` | `"todo"` \| `"doing"` \| `"done"` \| `"blocked"` | no | New status |
-| `priority` | `"high"` \| `"medium"` \| `"low"` | no | New priority |
-| `tags` | string[] | no | Replace tags |
-| `dueDate` | string | no | New due date (`YYYY-MM-DD`) |
-| `memo` | string | no | Link to memo file |
+| Name       | Type                                             | Required | Description                      |
+| ---------- | ------------------------------------------------ | -------- | -------------------------------- |
+| `id`       | string                                           | yes      | Task ID (full or partial prefix) |
+| `title`    | string                                           | no       | New title                        |
+| `status`   | `"todo"` \| `"doing"` \| `"done"` \| `"blocked"` | no       | New status                       |
+| `priority` | `"high"` \| `"medium"` \| `"low"`                | no       | New priority                     |
+| `tags`     | string[]                                         | no       | Replace tags                     |
+| `dueDate`  | string                                           | no       | New due date (`YYYY-MM-DD`)      |
+| `memo`     | string                                           | no       | Link to memo file                |
 
 **Returns:** Updated Task object.
 
 **Behavior note:** When `status` is provided, the status is updated first. Other fields are applied as a property update.
 
 **Example — mark as done:**
+
 ```json
 { "name": "task_update", "arguments": { "id": "a1b2", "status": "done" } }
 ```
 
 **Example — change title and priority:**
+
 ```json
-{ "name": "task_update", "arguments": { "id": "a1b2", "title": "Updated title", "priority": "low" } }
+{
+  "name": "task_update",
+  "arguments": { "id": "a1b2", "title": "Updated title", "priority": "low" }
+}
 ```
 
 ---
@@ -135,9 +161,9 @@ Delete a task permanently.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `id` | string | yes | Task ID (full or partial prefix) |
+| Name | Type   | Required | Description                      |
+| ---- | ------ | -------- | -------------------------------- |
+| `id` | string | yes      | Task ID (full or partial prefix) |
 
 **Returns:** The removed Task object (for confirmation), or error if not found.
 
@@ -149,13 +175,17 @@ Read a daily report file. Defaults to today if `date` is omitted.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `date` | string | no | Date in `YYYY-MM-DD` format. Defaults to today. |
+| Name   | Type   | Required | Description                                     |
+| ------ | ------ | -------- | ----------------------------------------------- |
+| `date` | string | no       | Date in `YYYY-MM-DD` format. Defaults to today. |
 
 **Returns:**
+
 ```json
-{ "path": "/Users/user/.memoli/reports/2026-03/2026-03-25.md", "content": "# 2026-03-25\n\n..." }
+{
+  "path": "/Users/user/.memoli/reports/2026-03/2026-03-25.md",
+  "content": "# 2026-03-25\n\n..."
+}
 ```
 
 **Error:** `"Daily file not found for: 2026-03-25"` if no report exists for that date.
@@ -168,13 +198,17 @@ Read a named memo file.
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | yes | Memo name without `.md` extension |
+| Name   | Type   | Required | Description                       |
+| ------ | ------ | -------- | --------------------------------- |
+| `name` | string | yes      | Memo name without `.md` extension |
 
 **Returns:**
+
 ```json
-{ "path": "/Users/user/.memoli/memo/project-ideas.md", "content": "# Project Ideas\n\n..." }
+{
+  "path": "/Users/user/.memoli/memo/project-ideas.md",
+  "content": "# Project Ideas\n\n..."
+}
 ```
 
 **Error:** `"Memo not found: project-ideas"` if the file doesn't exist.
@@ -188,6 +222,7 @@ List all available memo names.
 **Parameters:** None.
 
 **Returns:**
+
 ```json
 { "memos": ["project-ideas", "meeting-notes", "reading-list"] }
 ```
@@ -231,14 +266,14 @@ All errors use the MCP standard format:
 }
 ```
 
-| Error message | Cause |
-|---|---|
-| `Task not found: <id>` | No task matches the given ID prefix |
-| `title is required` | `task_add` called without `title` |
-| `Memo not found: <name>` | No memo file with that name |
-| `Daily file not found for: <date>` | No daily report for that date |
-| `Unknown tool: <name>` | Unrecognized tool name |
-| `Tool error: <message>` | Unexpected runtime error |
+| Error message                      | Cause                               |
+| ---------------------------------- | ----------------------------------- |
+| `Task not found: <id>`             | No task matches the given ID prefix |
+| `title is required`                | `task_add` called without `title`   |
+| `Memo not found: <name>`           | No memo file with that name         |
+| `Daily file not found for: <date>` | No daily report for that date       |
+| `Unknown tool: <name>`             | Unrecognized tool name              |
+| `Tool error: <message>`            | Unexpected runtime error            |
 
 ## Common Workflows
 
@@ -285,7 +320,13 @@ All errors use the MCP standard format:
 {
   "version": 1,
   "tasks": [
-    { "id": "a1b2c3d4", "title": "...", "status": "todo", "createdAt": "...", "updatedAt": "..." }
+    {
+      "id": "a1b2c3d4",
+      "title": "...",
+      "status": "todo",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
   ]
 }
 ```

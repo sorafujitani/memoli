@@ -23,12 +23,12 @@ test("-h shows help message", async () => {
 
 test("--version shows version", async () => {
   const { stdout } = await execFileAsync("bun", [CLI_PATH, "--version"]);
-  expect(stdout).toContain("memoli v0.0.6");
+  expect(stdout).toContain("memoli v1.0.0");
 });
 
 test("-v shows version", async () => {
   const { stdout } = await execFileAsync("bun", [CLI_PATH, "-v"]);
-  expect(stdout).toContain("memoli v0.0.6");
+  expect(stdout).toContain("memoli v1.0.0");
 });
 
 const EXIT_FAILURE = 1;
