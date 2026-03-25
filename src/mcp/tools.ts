@@ -45,7 +45,8 @@ const notFound = (id: string): McpCallToolResult =>
 const taskAddTool: ToolEntry = {
   definition: {
     name: "task_add",
-    description: "Add a new task",
+    description:
+      "Add a new task. Example: 'READMEを書く' with priority high and tag docs.",
     inputSchema: {
       type: "object",
       properties: {
@@ -71,13 +72,19 @@ const taskAddTool: ToolEntry = {
 const taskListTool: ToolEntry = {
   definition: {
     name: "task_list",
-    description: "List tasks with optional filters",
+    description:
+      "List tasks. Use this first to find tasks before updating or removing them. " +
+      "Returns all tasks by default. Filter by status, tag, or due date. " +
+      "Each task has an id, title, status, and optional fields (priority, tags, dueDate).",
     inputSchema: {
       type: "object",
       properties: {
         status: {
           type: "array",
-          items: { type: "string", enum: ["todo", "doing", "done", "blocked"] },
+          items: {
+            type: "string",
+            enum: ["todo", "doing", "done", "blocked"],
+          },
           description: "Filter by status",
         },
         tag: { type: "string", description: "Filter by tag" },
@@ -97,72 +104,99 @@ const taskListTool: ToolEntry = {
 const taskGetTool: ToolEntry = {
   definition: {
     name: "task_get",
-    description: "Get a task by ID (supports partial ID)",
+    description:
+      "Find a task by keyword or ID. " +
+      "The query can be a task title (partial match, case-insensitive) or a task ID (prefix match). " +
+      'Example: query "README" matches a task titled "READMEを書く".',
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "Task ID" },
+        query: {
+          type: "string",
+          description: "Task title keyword or task ID to search for",
+        },
       },
-      required: ["id"],
+      required: ["query"],
     },
   },
   handler: async (args) => {
-    const id = asString(args["id"]);
-    const task = await getTask(id);
-    return task === undefined ? notFound(id) : jsonResult(task);
+    const query = asString(args["query"]);
+    const task = await getTask(query);
+    return task === undefined ? notFound(query) : jsonResult(task);
   },
 };
 
-const handleTaskStatusUpdate = async (
+const handleTaskUpdate = async (
   args: Record<string, unknown>,
 ): Promise<McpCallToolResult> => {
-  const id = asString(args["id"]);
+  const query = asString(args["query"]);
   const statusStr = asString(args["status"]);
   if (statusStr !== "" && isTaskStatus(statusStr)) {
-    const task = await updateTaskStatus(id, statusStr);
-    return task === undefined ? notFound(id) : jsonResult(task);
+    const task = await updateTaskStatus(query, statusStr);
+    return task === undefined ? notFound(query) : jsonResult(task);
   }
-  const task = await updateTask(id, parseTaskUpdates(args));
-  return task === undefined ? notFound(id) : jsonResult(task);
+  const task = await updateTask(query, parseTaskUpdates(args));
+  return task === undefined ? notFound(query) : jsonResult(task);
 };
 
 const taskUpdateTool: ToolEntry = {
   definition: {
     name: "task_update",
-    description: "Update a task's properties or status",
+    description:
+      "Update a task found by keyword or ID. " +
+      "The query can be a task title (partial match) or task ID. " +
+      'Example: query "README", status "done" marks the README task as done.',
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "Task ID" },
-        title: { type: "string" },
-        status: { type: "string", enum: ["todo", "doing", "done", "blocked"] },
-        priority: { type: "string", enum: ["high", "medium", "low"] },
+        query: {
+          type: "string",
+          description:
+            "Task title keyword or task ID to find the task to update",
+        },
+        title: { type: "string", description: "New title" },
+        status: {
+          type: "string",
+          enum: ["todo", "doing", "done", "blocked"],
+          description: "New status",
+        },
+        priority: {
+          type: "string",
+          enum: ["high", "medium", "low"],
+          description: "New priority",
+        },
         tags: { type: "array", items: { type: "string" } },
-        dueDate: { type: "string" },
-        memo: { type: "string" },
+        dueDate: { type: "string", description: "New due date (YYYY-MM-DD)" },
+        memo: { type: "string", description: "Link to memo file" },
       },
-      required: ["id"],
+      required: ["query"],
     },
   },
-  handler: handleTaskStatusUpdate,
+  handler: handleTaskUpdate,
 };
 
 const taskRemoveTool: ToolEntry = {
   definition: {
     name: "task_remove",
-    description: "Remove a task by ID",
+    description:
+      "Remove a task found by keyword or ID. " +
+      "The query can be a task title (partial match) or task ID.",
     inputSchema: {
       type: "object",
       properties: {
-        id: { type: "string", description: "Task ID" },
+        query: {
+          type: "string",
+          description:
+            "Task title keyword or task ID to find the task to remove",
+        },
       },
-      required: ["id"],
+      required: ["query"],
     },
   },
   handler: async (args) => {
-    const id = asString(args["id"]);
-    const task = await removeTask(id);
-    return task === undefined ? notFound(id) : jsonResult(task);
+    const query = asString(args["query"]);
+    const task = await removeTask(query);
+    return task === undefined ? notFound(query) : jsonResult(task);
   },
 };
 

@@ -61,6 +61,14 @@ const withStoreMutation = async <T>(
 const findTaskById = (store: TaskStore, id: string): Task | undefined =>
   store.tasks.find((task) => task.id === id || task.id.startsWith(id));
 
+const findTaskByTitle = (store: TaskStore, title: string): Task | undefined => {
+  const lower = title.toLowerCase();
+  return store.tasks.find((task) => task.title.toLowerCase().includes(lower));
+};
+
+const findTask = (store: TaskStore, query: string): Task | undefined =>
+  findTaskById(store, query) ?? findTaskByTitle(store, query);
+
 export const addTask = (
   title: string,
   options: TaskAddOptions = {},
@@ -80,11 +88,11 @@ export const addTask = (
   });
 
 export const updateTaskStatus = (
-  id: string,
+  query: string,
   status: TaskStatus,
 ): Promise<Task | undefined> =>
   withStoreMutation((store) => {
-    const task = findTaskById(store, id);
+    const task = findTask(store, query);
     if (task === undefined) {
       return;
     }
@@ -94,11 +102,11 @@ export const updateTaskStatus = (
   });
 
 export const updateTask = (
-  id: string,
+  query: string,
   updates: TaskUpdatableFields,
 ): Promise<Task | undefined> =>
   withStoreMutation((store) => {
-    const task = findTaskById(store, id);
+    const task = findTask(store, query);
     if (task === undefined) {
       return;
     }
@@ -107,9 +115,9 @@ export const updateTask = (
     return task;
   });
 
-export const removeTask = (id: string): Promise<Task | undefined> =>
+export const removeTask = (query: string): Promise<Task | undefined> =>
   withStoreMutation((store) => {
-    const task = findTaskById(store, id);
+    const task = findTask(store, query);
     if (task === undefined) {
       return;
     }
@@ -144,7 +152,7 @@ export const listTasks = async (filter: TaskFilter = {}): Promise<Task[]> => {
   return applyFilters(store.tasks, filter);
 };
 
-export const getTask = async (id: string): Promise<Task | undefined> => {
+export const getTask = async (query: string): Promise<Task | undefined> => {
   const store = await loadStore();
-  return findTaskById(store, id);
+  return findTask(store, query);
 };
