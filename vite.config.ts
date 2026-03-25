@@ -31,7 +31,19 @@ export default defineConfig({
         files: ["*.cjs"],
         rules: {
           "typescript/no-require-imports": "off",
-          "typescript/promise-function-async": "off",
+        },
+      },
+      {
+        files: ["*.test.ts"],
+        rules: {
+          "max-lines-per-function": "off",
+          "typescript/no-unsafe-type-assertion": "off",
+        },
+      },
+      {
+        files: ["vite.config.ts"],
+        rules: {
+          "no-magic-numbers": "off",
         },
       },
     ],
@@ -47,7 +59,8 @@ export default defineConfig({
       "typescript/no-namespace": "warn",
       "typescript/no-non-null-assertion": "warn",
       "typescript/no-require-imports": "error",
-      "typescript/promise-function-async": "warn",
+      // Off: conflicts with require-await when returning Promise without await
+      "typescript/promise-function-async": "off",
       "typescript/use-unknown-in-catch-callback-variable": "warn",
 
       // TypeScript nursery — stable enough to enable
@@ -56,9 +69,14 @@ export default defineConfig({
       "typescript/prefer-optional-chain": "warn",
 
       // Import hygiene
+      "import/no-namespace": "off",
       "import/no-cycle": "error",
       "import/no-duplicates": "error",
       "import/no-self-import": "error",
+
+      // Off: conflicts with import/no-duplicates — inline type specifiers
+      // allow merging type + value imports into a single statement
+      "import/consistent-type-specifier-style": "off",
 
       // Restriction rules — individual opt-in
       "no-alert": "error",
@@ -68,6 +86,7 @@ export default defineConfig({
 
       // Existing
       "no-plusplus": "off",
+      "unicorn/no-useless-undefined": "off",
       "oxc/approx-constant": "warn",
 
       // Configured: allow array indexes and common values
@@ -76,8 +95,20 @@ export default defineConfig({
         { ignore: [0, 1, -1], ignoreArrayIndexes: true },
       ],
 
+      // Configured: allow single-char generics (T, K) and short callback params (t)
+      "id-length": ["warn", { exceptions: ["T", "K", "t", "v"] }],
+
+      // Configured: 10 is too strict for stream parsers and multi-field builders
+      "max-statements": ["warn", 12],
+
       // Off: legitimate use of new Promise for callback API wrapping
       "promise/avoid-new": "off",
+
+      // Off: await-in-loop is legitimate for stream readers
+      "no-await-in-loop": "off",
+
+      // Off: generator functions cannot be expressed as arrow expressions
+      "func-style": "off",
 
       // Off: incompatible as shared baseline
       "capitalized-comments": "off",
