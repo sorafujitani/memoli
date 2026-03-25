@@ -19,7 +19,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check (format + lint + typecheck)
-        run: bunx vp check
+        run: bun --bun node_modules/.bin/vp check
 
       - name: Test
-        run: bunx vp test
+        run: bun --bun node_modules/.bin/vp test
