@@ -24,8 +24,10 @@ bun run release       # Release (scripts/release.ts)
 
 ```
 src/
-  commands/       # CLI commands (daily, today, range, memo, init)
-  utils/          # Shared utilities (date, fs, template)
+  commands/       # CLI commands (daily, today, range, memo, init, task, serve)
+  mcp/            # MCP server (stdio JSON-RPC)
+  store/          # Data persistence (task-store)
+  utils/          # Shared utilities (date, fs, template, args)
   config.ts       # Configuration
 index.ts          # Entry point
 index.test.ts     # Tests
@@ -38,4 +40,4 @@ scripts/          # Build and release scripts
 - Use `bun` for all runtime and package management tasks
 - Use `Bun.file` instead of `node:fs` readFile/writeFile
 - Tests use vitest (`import { test, expect } from "vitest"`)
-- No external dependencies — keep `dependencies` empty in package.json
+- Only dependency is `valibot` for schema validation — keep dependencies minimal
