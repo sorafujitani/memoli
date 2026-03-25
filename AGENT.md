@@ -106,50 +106,56 @@ List tasks with optional filters. Returns all tasks if no filters given.
 
 ### `task_get`
 
-Get a single task by ID. Supports **partial prefix match** — you only need enough characters to uniquely identify the task (e.g. `"a1b2"` matches `"a1b2c3d4"`).
+Find a task by title keyword or ID. The `query` matches against task titles (case-insensitive substring match) or task IDs (prefix match). You do not need to know internal IDs — just use a word from the task title.
 
 **Parameters:**
 
-| Name | Type   | Required | Description                      |
-| ---- | ------ | -------- | -------------------------------- |
-| `id` | string | yes      | Task ID (full or partial prefix) |
+| Name    | Type   | Required | Description                              |
+| ------- | ------ | -------- | ---------------------------------------- |
+| `query` | string | yes      | Task title keyword or ID (partial match) |
 
 **Returns:** Task object, or error if not found.
+
+**Example — find by title keyword:**
+
+```json
+{ "name": "task_get", "arguments": { "query": "README" } }
+```
+
+This matches a task titled "READMEを書く".
 
 ---
 
 ### `task_update`
 
-Update a task's properties or status. Only provided fields are updated; omitted fields are unchanged.
+Update a task found by title keyword or ID. Only provided fields are changed; omitted fields remain unchanged.
 
 **Parameters:**
 
-| Name       | Type                                             | Required | Description                      |
-| ---------- | ------------------------------------------------ | -------- | -------------------------------- |
-| `id`       | string                                           | yes      | Task ID (full or partial prefix) |
-| `title`    | string                                           | no       | New title                        |
-| `status`   | `"todo"` \| `"doing"` \| `"done"` \| `"blocked"` | no       | New status                       |
-| `priority` | `"high"` \| `"medium"` \| `"low"`                | no       | New priority                     |
-| `tags`     | string[]                                         | no       | Replace tags                     |
-| `dueDate`  | string                                           | no       | New due date (`YYYY-MM-DD`)      |
-| `memo`     | string                                           | no       | Link to memo file                |
+| Name       | Type                                             | Required | Description                              |
+| ---------- | ------------------------------------------------ | -------- | ---------------------------------------- |
+| `query`    | string                                           | yes      | Task title keyword or ID (partial match) |
+| `title`    | string                                           | no       | New title                                |
+| `status`   | `"todo"` \| `"doing"` \| `"done"` \| `"blocked"` | no       | New status                               |
+| `priority` | `"high"` \| `"medium"` \| `"low"`                | no       | New priority                             |
+| `tags`     | string[]                                         | no       | Replace tags                             |
+| `dueDate`  | string                                           | no       | New due date (`YYYY-MM-DD`)              |
+| `memo`     | string                                           | no       | Link to memo file                        |
 
 **Returns:** Updated Task object.
 
-**Behavior note:** When `status` is provided, the status is updated first. Other fields are applied as a property update.
-
-**Example — mark as done:**
+**Example — mark a task as done by title:**
 
 ```json
-{ "name": "task_update", "arguments": { "id": "a1b2", "status": "done" } }
+{ "name": "task_update", "arguments": { "query": "README", "status": "done" } }
 ```
 
-**Example — change title and priority:**
+**Example — change priority by title:**
 
 ```json
 {
   "name": "task_update",
-  "arguments": { "id": "a1b2", "title": "Updated title", "priority": "low" }
+  "arguments": { "query": "レビュー", "priority": "high" }
 }
 ```
 
@@ -157,15 +163,21 @@ Update a task's properties or status. Only provided fields are updated; omitted 
 
 ### `task_remove`
 
-Delete a task permanently.
+Remove a task found by title keyword or ID.
 
 **Parameters:**
 
-| Name | Type   | Required | Description                      |
-| ---- | ------ | -------- | -------------------------------- |
-| `id` | string | yes      | Task ID (full or partial prefix) |
+| Name    | Type   | Required | Description                              |
+| ------- | ------ | -------- | ---------------------------------------- |
+| `query` | string | yes      | Task title keyword or ID (partial match) |
 
 **Returns:** The removed Task object (for confirmation), or error if not found.
+
+**Example:**
+
+```json
+{ "name": "task_remove", "arguments": { "query": "不要なタスク" } }
+```
 
 ---
 
@@ -251,9 +263,14 @@ Every task tool returns or accepts this structure:
 }
 ```
 
-### ID Matching
+### Query Matching
 
-All `id` parameters use **prefix matching**. The shortest unambiguous prefix works. Typically 3–4 characters are sufficient.
+All `query` parameters match tasks by:
+
+1. **Title substring** (case-insensitive) — e.g. `"README"` matches `"READMEを書く"`
+2. **ID prefix** (fallback) — e.g. `"a1b2"` matches `"a1b2c3d4"`
+
+Title matching is tried first. You never need to look up or remember internal IDs.
 
 ## Error Responses
 
@@ -266,14 +283,14 @@ All errors use the MCP standard format:
 }
 ```
 
-| Error message                      | Cause                               |
-| ---------------------------------- | ----------------------------------- |
-| `Task not found: <id>`             | No task matches the given ID prefix |
-| `title is required`                | `task_add` called without `title`   |
-| `Memo not found: <name>`           | No memo file with that name         |
-| `Daily file not found for: <date>` | No daily report for that date       |
-| `Unknown tool: <name>`             | Unrecognized tool name              |
-| `Tool error: <message>`            | Unexpected runtime error            |
+| Error message                      | Cause                                   |
+| ---------------------------------- | --------------------------------------- |
+| `Task not found: <query>`          | No task matches the given keyword or ID |
+| `title is required`                | `task_add` called without `title`       |
+| `Memo not found: <name>`           | No memo file with that name             |
+| `Daily file not found for: <date>` | No daily report for that date           |
+| `Unknown tool: <name>`             | Unrecognized tool name                  |
+| `Tool error: <message>`            | Unexpected runtime error                |
 
 ## Common Workflows
 
@@ -286,9 +303,11 @@ All errors use the MCP standard format:
 ### Task lifecycle
 
 1. `task_add` → create with title, priority, tags
-2. `task_update` with `status: "doing"` → start work
-3. `task_update` with `status: "done"` → complete
-4. Optionally `task_remove` to clean up
+2. `task_update` with `query: "タスク名", status: "doing"` → start work
+3. `task_update` with `query: "タスク名", status: "done"` → complete
+4. Optionally `task_remove` with `query: "タスク名"` to clean up
+
+No need to track IDs — just use the task title as the query.
 
 ### Cross-reference memos and tasks
 
