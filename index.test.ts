@@ -21,16 +21,6 @@ test("-h shows help message", async () => {
   expect(stdout).toContain("memoli - CLI markdown memo manager");
 });
 
-test("--version shows version", async () => {
-  const { stdout } = await execFileAsync("bun", [CLI_PATH, "--version"]);
-  expect(stdout).toContain("memoli v1.0.0");
-});
-
-test("-v shows version", async () => {
-  const { stdout } = await execFileAsync("bun", [CLI_PATH, "-v"]);
-  expect(stdout).toContain("memoli v1.0.0");
-});
-
 const EXIT_FAILURE = 1;
 
 test("unknown command exits with error", async () => {

@@ -1,9 +1,11 @@
 import { execFile } from "node:child_process";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import type { Task } from "../types.ts";
 
@@ -13,8 +15,20 @@ const CLI_PATH = join(currentDir, "..", "..", "..", "index.ts");
 
 const ID_LENGTH = 8;
 
+let testDir: string;
+
+beforeAll(async () => {
+  testDir = await mkdtemp(join(tmpdir(), "memoli-test-"));
+});
+
+afterAll(async () => {
+  await rm(testDir, { recursive: true, force: true });
+});
+
 const run = async (...args: string[]): Promise<string> => {
-  const { stdout } = await execFileAsync("bun", [CLI_PATH, ...args]);
+  const { stdout } = await execFileAsync("bun", [CLI_PATH, ...args], {
+    env: { ...process.env, MEMOLI_DIR: testDir },
+  });
   return stdout.trim();
 };
 
