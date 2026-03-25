@@ -4,6 +4,8 @@ import { daily } from "./src/commands/daily.ts";
 import { init } from "./src/commands/init.ts";
 import { memo } from "./src/commands/memo.ts";
 import { range } from "./src/commands/range.ts";
+import { serve } from "./src/commands/serve.ts";
+import { task } from "./src/commands/task/index.ts";
 import { today } from "./src/commands/today.ts";
 import { VERSION } from "./src/config.ts";
 
@@ -29,6 +31,8 @@ Commands:
   today                    Open today's memo in editor
   memo <name>              Create or open a memo
   range <start> <end>      Create or open a date range memo
+  task [subcommand]        Manage tasks (add, done, doing, rm, show, edit)
+  serve                    Start MCP server (stdio)
   help                     Show this help message
 
 Daily/Range Options:
@@ -64,6 +68,12 @@ const commands: Record<string, (commandArgs: string[]) => Promise<void>> = {
     const [startDate = "", endDate = ""] = commandArgs;
     const template = parseOption(commandArgs, "-t");
     await range(startDate, endDate, { template });
+  },
+  serve: async () => {
+    await serve();
+  },
+  task: async (commandArgs) => {
+    await task(commandArgs);
   },
   today: async () => {
     await today();
