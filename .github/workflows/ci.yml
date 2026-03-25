@@ -20,6 +20,8 @@ jobs:
 
       - name: Check (format + lint + typecheck)
         run: bun run check
+        env:
+          NODE_OPTIONS: ""
 
       - name: Test
         run: bun run test
