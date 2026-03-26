@@ -9,18 +9,16 @@ const STATUS_ICONS: Record<TaskStatus, string> = {
 };
 
 const PRIORITY_ICONS: Record<TaskPriority, string> = {
-  high: "!!!",
-  medium: "!!",
-  low: "!",
+  high: "HIGH",
+  medium: "MED",
+  low: "LOW",
 };
-
-const SHORT_ID_LENGTH = 6;
 
 export const formatTask = (task: Task): string => {
   const icon = STATUS_ICONS[task.status];
-  const parts = [`${icon} ${task.id.slice(0, SHORT_ID_LENGTH)} ${task.title}`];
+  const parts = [`${icon} ${task.title}`];
   if (task.priority !== undefined) {
-    parts.push(`(${PRIORITY_ICONS[task.priority]})`);
+    parts.push(`[${PRIORITY_ICONS[task.priority]}]`);
   }
   if (task.dueDate !== undefined) {
     parts.push(`due:${task.dueDate}`);

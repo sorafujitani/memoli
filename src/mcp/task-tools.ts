@@ -91,8 +91,8 @@ const taskListTool: ToolEntry = {
   definition: {
     name: "task_list",
     description:
-      "List tasks as a flat list. Filter by status, tag, or due date. " +
-      "For tree/graph view, use task_tree instead.",
+      "List tasks as flat JSON. Use task_tree instead for visual display. " +
+      "This tool is for programmatic access or when structured JSON data is needed.",
     inputSchema: {
       type: "object",
       properties: {
@@ -240,8 +240,9 @@ const taskTreeTool: ToolEntry = {
   definition: {
     name: "task_tree",
     description:
-      "Show all tasks as a tree with parent-child relationships. " +
-      "Use when the user wants the big picture or task hierarchy. " +
+      "Primary tool for listing tasks. Shows tasks as a tree with parent-child relationships. " +
+      "Use this by default when the user asks for task list, task overview, or task status. " +
+      "Supports filtering by status, tag, and due date. " +
       "Default: visual tree text. Set format 'json' for structured data.",
     inputSchema: {
       type: "object",
@@ -250,6 +251,11 @@ const taskTreeTool: ToolEntry = {
           type: "array",
           items: { type: "string", enum: ["todo", "doing", "done", "blocked"] },
           description: "Filter by status",
+        },
+        tag: { type: "string", description: "Filter by tag" },
+        dueDate: {
+          type: "string",
+          description: "Filter by due date (YYYY-MM-DD)",
         },
         format: {
           type: "string",
