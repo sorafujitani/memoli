@@ -5,6 +5,12 @@ import * as v from "valibot";
 import { MEMOLI_DIR } from "../config.ts";
 import { ensureDir } from "../utils/fs.ts";
 import {
+  buildTree,
+  getDescendants,
+  hasCycle,
+  type TreeNode,
+} from "./task-graph.ts";
+import {
   TaskStoreSchema,
   type Task,
   type TaskAddOptions,
@@ -74,6 +80,12 @@ export const addTask = (
   options: TaskAddOptions = {},
 ): Promise<Task> =>
   withStoreMutation((store) => {
+    if (options.parentId !== undefined) {
+      const parent = findTaskById(store, options.parentId);
+      if (parent === undefined) {
+        throw new Error(`Parent task not found: ${options.parentId}`);
+      }
+    }
     const now = new Date().toISOString();
     const task: Task = {
       id: generateId(),
@@ -87,6 +99,31 @@ export const addTask = (
     return task;
   });
 
+const cascadeDescendantsDone = (
+  store: TaskStore,
+  taskId: string,
+  now: string,
+): void => {
+  for (const descendant of getDescendants(store.tasks, taskId)) {
+    if (descendant.status !== "done") {
+      descendant.status = "done";
+      descendant.updatedAt = now;
+    }
+  }
+};
+
+const revertParentIfDone = (
+  store: TaskStore,
+  parentId: string,
+  now: string,
+): void => {
+  const parent = findTaskById(store, parentId);
+  if (parent?.status === "done") {
+    parent.status = "doing";
+    parent.updatedAt = now;
+  }
+};
+
 export const updateTaskStatus = (
   query: string,
   status: TaskStatus,
@@ -96,8 +133,18 @@ export const updateTaskStatus = (
     if (task === undefined) {
       return;
     }
+    const now = new Date().toISOString();
     task.status = status;
-    task.updatedAt = new Date().toISOString();
+    task.updatedAt = now;
+
+    if (status === "done") {
+      cascadeDescendantsDone(store, task.id, now);
+    } else if (
+      (status === "todo" || status === "doing") &&
+      task.parentId !== undefined
+    ) {
+      revertParentIfDone(store, task.parentId, now);
+    }
     return task;
   });
 
@@ -110,6 +157,12 @@ export const updateTask = (
     if (task === undefined) {
       return;
     }
+    if (
+      updates.parentId !== undefined &&
+      hasCycle(store.tasks, task.id, updates.parentId)
+    ) {
+      throw new Error("Circular parent reference detected");
+    }
     Object.assign(task, updates);
     task.updatedAt = new Date().toISOString();
     return task;
@@ -120,6 +173,19 @@ export const removeTask = (query: string): Promise<Task | undefined> =>
     const task = findTask(store, query);
     if (task === undefined) {
       return;
+    }
+    // Reparent children to the removed task's parent (or root)
+    for (const item of store.tasks) {
+      if (item.parentId === task.id) {
+        item.parentId = task.parentId;
+      }
+      // Remove blockedBy references to the deleted task
+      if (item.blockedBy !== undefined) {
+        item.blockedBy = item.blockedBy.filter((id) => id !== task.id);
+        if (item.blockedBy.length === 0) {
+          item.blockedBy = undefined;
+        }
+      }
     }
     store.tasks = store.tasks.filter((item) => item.id !== task.id);
     return task;
@@ -144,12 +210,24 @@ const applyFilters = (tasks: Task[], filter: TaskFilter): Task[] => {
     filtered = filtered.filter((task) => task.dueDate === filter.dueDate);
   }
 
+  if (filter.parentId !== undefined) {
+    filtered = filtered.filter((task) => task.parentId === filter.parentId);
+  }
+
   return filtered;
 };
 
 export const listTasks = async (filter: TaskFilter = {}): Promise<Task[]> => {
   const store = await loadStore();
   return applyFilters(store.tasks, filter);
+};
+
+export const listTaskTree = async (
+  filter: TaskFilter = {},
+): Promise<TreeNode[]> => {
+  const store = await loadStore();
+  const filtered = applyFilters(store.tasks, filter);
+  return buildTree(filtered);
 };
 
 export const getTask = async (query: string): Promise<Task | undefined> => {

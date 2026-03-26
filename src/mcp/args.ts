@@ -21,12 +21,14 @@ const TaskAddArgsSchema = v.object({
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
   dueDate: v.fallback(v.optional(DateString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
+  parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });
 
 const TaskFilterArgsSchema = v.object({
   status: v.fallback(v.optional(v.array(TaskStatusSchema)), undefined),
   tag: v.fallback(v.optional(NonEmptyString), undefined),
   dueDate: v.fallback(v.optional(NonEmptyString), undefined),
+  parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });
 
 const TaskUpdateArgsSchema = v.object({
@@ -35,6 +37,7 @@ const TaskUpdateArgsSchema = v.object({
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
   dueDate: v.fallback(v.optional(NonEmptyString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
+  parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });
 
 export const parseTaskAddOptions = (args: Args): TaskAddOptions =>

@@ -1,3 +1,4 @@
+import type { TreeNode } from "../../store/task-graph.ts";
 import type { Task, TaskPriority, TaskStatus } from "../../store/types.ts";
 
 const STATUS_ICONS: Record<TaskStatus, string> = {
@@ -53,6 +54,7 @@ const OPTIONAL_DETAIL_FIELDS: DetailFieldMapping[] = [
         ? tk.blockedBy.join(", ")
         : undefined,
   },
+  { label: "Parent", value: (tk) => tk.parentId },
 ];
 
 const LABEL_PAD = 10;
@@ -82,3 +84,39 @@ export const formatTaskDetail = (task: Task): string => {
 export const formatTaskJson = (task: Task): string => JSON.stringify(task);
 
 export const formatTasksJson = (tasks: Task[]): string => JSON.stringify(tasks);
+
+const resolveConnector = (depth: number, isLast: boolean): string => {
+  if (depth === 0) {
+    return "";
+  }
+  return isLast ? "└── " : "├── ";
+};
+
+const resolveChildPrefix = (
+  prefix: string,
+  depth: number,
+  isLast: boolean,
+): string => {
+  if (depth === 0) {
+    return "";
+  }
+  return `${prefix}${isLast ? "    " : "│   "}`;
+};
+
+const formatTreeNode = (
+  node: TreeNode,
+  prefix: string,
+  isLast: boolean,
+): string[] => {
+  const connector = resolveConnector(node.depth, isLast);
+  const lines = [`${prefix}${connector}${formatTask(node.task)}`];
+  const childPrefix = resolveChildPrefix(prefix, node.depth, isLast);
+  for (const [idx, child] of node.children.entries()) {
+    const childIsLast = idx === node.children.length - 1;
+    lines.push(...formatTreeNode(child, childPrefix, childIsLast));
+  }
+  return lines;
+};
+
+export const formatTaskTree = (nodes: TreeNode[]): string =>
+  nodes.flatMap((node) => formatTreeNode(node, "", true)).join("\n");

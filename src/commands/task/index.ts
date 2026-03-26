@@ -2,6 +2,7 @@ import {
   addTask,
   getTask,
   listTasks,
+  listTaskTree,
   removeTask,
   updateTask,
   updateTaskStatus,
@@ -13,11 +14,17 @@ import {
 } from "../../store/types.ts";
 import { hasFlag, parseOption } from "../../utils/args.ts";
 import { getTodayDateStr } from "../../utils/date.ts";
-import { formatTask, formatTaskJson, formatTasksJson } from "./format.ts";
+import {
+  formatTask,
+  formatTaskJson,
+  formatTaskTree,
+  formatTasksJson,
+} from "./format.ts";
 import { outputTask, outputTaskDetail } from "./output.ts";
 import {
   extractTitle,
   parseDueDate,
+  parseParentId,
   parsePriority,
   parseTags,
 } from "./parse.ts";
@@ -43,6 +50,7 @@ List Options:
   --status <status>    Filter by status (todo,doing,done,blocked)
   --tag <tag>          Filter by tag
   --due <date>         Filter by due date (YYYY-MM-DD or "today")
+  --tree               Display tasks as a tree
 
 Add/Edit Options:
   --priority <p>       Set priority (high, medium, low)
@@ -50,6 +58,7 @@ Add/Edit Options:
   --due <date>         Set due date (YYYY-MM-DD)
   --memo <name>        Link to memo file
   --daily              Link to today's daily
+  --parent <id>        Set parent task (use "none" to remove)
 
 Global Options:
   --json               Output in JSON format
@@ -74,12 +83,18 @@ const handleAdd = async (args: string[], json: boolean): Promise<void> => {
   }
 
   const tagStr = parseOption(args, "--tag");
+  const parentResult = parseParentId(parseOption(args, "--parent"));
+  const parentId =
+    parentResult === undefined || parentResult.clear
+      ? undefined
+      : parentResult.value;
   const task = await addTask(title, {
     priority: parsePriority(parseOption(args, "--priority")),
     tags: tagStr === undefined ? undefined : parseTags(tagStr),
     dueDate: parseDueDate(parseOption(args, "--due")),
     memo: parseOption(args, "--memo"),
     dailyRef: hasFlag(args, "--daily") ? getTodayDateStr() : undefined,
+    parentId,
   });
 
   outputTask(task, "Added", json);
@@ -148,6 +163,7 @@ const buildEditUpdates = (args: string[]): TaskUpdatableFields => {
   const updates: TaskUpdatableFields = {};
   const tagStr = parseOption(args, "--tag");
   const dueDateRaw = parseOption(args, "--due");
+  const parentResult = parseParentId(parseOption(args, "--parent"));
   setIfDefined(updates, "title", parseOption(args, "--title"));
   setIfDefined(
     updates,
@@ -161,6 +177,9 @@ const buildEditUpdates = (args: string[]): TaskUpdatableFields => {
   );
   setIfDefined(updates, "dueDate", parseDueDate(dueDateRaw));
   setIfDefined(updates, "memo", parseOption(args, "--memo"));
+  if (parentResult !== undefined) {
+    updates.parentId = parentResult.clear ? undefined : parentResult.value;
+  }
   return updates;
 };
 
@@ -179,20 +198,25 @@ const resolveStatusFilter = (
   return undefined;
 };
 
-const handleList = async (args: string[], json: boolean): Promise<void> => {
-  const statusFilter = resolveStatusFilter(
-    parseOption(args, "--status"),
-    hasFlag(args, "--all"),
-  );
-  const tag = parseOption(args, "--tag");
-  const dueDate = parseDueDate(parseOption(args, "--due"));
+const printTreeOutput = async (
+  filter: Parameters<typeof listTaskTree>[0],
+  json: boolean,
+): Promise<void> => {
+  const nodes = await listTaskTree(filter);
+  if (json) {
+    console.log(JSON.stringify(nodes));
+  } else if (nodes.length === 0) {
+    console.log("No tasks found.");
+  } else {
+    console.log(formatTaskTree(nodes));
+  }
+};
 
-  const tasks = await listTasks({
-    status: statusFilter,
-    tag,
-    dueDate,
-  });
-
+const printListOutput = async (
+  filter: Parameters<typeof listTasks>[0],
+  json: boolean,
+): Promise<void> => {
+  const tasks = await listTasks(filter);
   if (json) {
     console.log(formatTasksJson(tasks));
   } else if (tasks.length === 0) {
@@ -202,6 +226,20 @@ const handleList = async (args: string[], json: boolean): Promise<void> => {
       console.log(formatTask(item));
     }
   }
+};
+
+const handleList = async (args: string[], json: boolean): Promise<void> => {
+  const statusFilter = resolveStatusFilter(
+    parseOption(args, "--status"),
+    hasFlag(args, "--all"),
+  );
+  const tag = parseOption(args, "--tag");
+  const dueDate = parseDueDate(parseOption(args, "--due"));
+  const filter = { status: statusFilter, tag, dueDate };
+
+  await (hasFlag(args, "--tree")
+    ? printTreeOutput(filter, json)
+    : printListOutput(filter, json));
 };
 
 const subcommands: Record<

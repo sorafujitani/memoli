@@ -23,6 +23,7 @@ export const TaskSchema = v.object({
   updatedAt: v.string(),
   dueDate: v.optional(v.string()),
   blockedBy: v.optional(v.array(v.string())),
+  parentId: v.optional(v.string()),
 });
 
 export const TaskStoreSchema = v.object({
@@ -34,6 +35,7 @@ export const TaskFilterSchema = v.object({
   status: v.optional(v.array(TaskStatusSchema)),
   tag: v.optional(v.string()),
   dueDate: v.optional(v.string()),
+  parentId: v.optional(v.string()),
 });
 
 export const TaskAddOptionsSchema = v.object({
@@ -42,6 +44,7 @@ export const TaskAddOptionsSchema = v.object({
   dueDate: v.optional(v.string()),
   memo: v.optional(v.string()),
   dailyRef: v.optional(v.string()),
+  parentId: v.optional(v.string()),
 });
 
 // ── Types (derived from schemas) ─────────────────────────────────────
@@ -63,6 +66,7 @@ export type TaskUpdatableFields = Partial<
     | "memo"
     | "blockedBy"
     | "dailyRef"
+    | "parentId"
   >
 >;
 

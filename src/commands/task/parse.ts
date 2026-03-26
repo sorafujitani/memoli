@@ -29,6 +29,20 @@ export const parseDueDate = (raw: string | undefined): string | undefined => {
   return undefined;
 };
 
+const PARENT_NONE = "none";
+
+export const parseParentId = (
+  raw: string | undefined,
+): { clear: true } | { clear: false; value: string } | undefined => {
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (raw === PARENT_NONE) {
+    return { clear: true };
+  }
+  return { clear: false, value: raw };
+};
+
 export const extractTitle = (args: string[]): string => {
   const titleParts: string[] = [];
   for (const arg of args) {
