@@ -243,7 +243,8 @@ const taskTreeTool: ToolEntry = {
       "Primary tool for listing tasks. Shows tasks as a tree with parent-child relationships. " +
       "Use this by default when the user asks for task list, task overview, or task status. " +
       "Supports filtering by status, tag, and due date. " +
-      "Default: visual tree text. Set format 'json' for structured data.",
+      "Default: visual tree text. Set format 'json' for structured data. " +
+      "IMPORTANT: When format is 'text' (default), display the returned tree text as-is in a code block. Do NOT reformat it into a table or other layout.",
     inputSchema: {
       type: "object",
       properties: {
