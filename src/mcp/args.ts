@@ -29,6 +29,7 @@ const TaskFilterArgsSchema = v.object({
   tag: v.fallback(v.optional(NonEmptyString), undefined),
   dueDate: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
+  scope: v.fallback(v.optional(v.picklist(["day"])), undefined),
 });
 
 const TaskUpdateArgsSchema = v.object({

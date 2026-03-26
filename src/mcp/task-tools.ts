@@ -242,7 +242,11 @@ const taskTreeTool: ToolEntry = {
     description:
       "Primary tool for listing tasks. Shows tasks as a tree with parent-child relationships. " +
       "Use this by default when the user asks for task list, task overview, or task status. " +
-      "Supports filtering by status, tag, and due date. " +
+      "Supports filtering by status, tag, due date, and scope. " +
+      "When the user asks for tasks without specifying a scope (e.g. 'タスク一覧', 'タスク'), " +
+      "set scope to 'day' and dueDate to today (YYYY-MM-DD) to show today's daily view " +
+      "(due today + overdue + in-progress). " +
+      "Only show all tasks when explicitly asked (e.g. '全タスク', 'all tasks') by omitting scope. " +
       "Default: visual tree text. Set format 'json' for structured data. " +
       "IMPORTANT: When format is 'text' (default), display the returned tree text as-is in a code block. Do NOT reformat it into a table or other layout.",
     inputSchema: {
@@ -256,7 +260,14 @@ const taskTreeTool: ToolEntry = {
         tag: { type: "string", description: "Filter by tag" },
         dueDate: {
           type: "string",
-          description: "Filter by due date (YYYY-MM-DD)",
+          description:
+            "Filter by due date (YYYY-MM-DD). Required when scope is 'day'.",
+        },
+        scope: {
+          type: "string",
+          enum: ["day"],
+          description:
+            "Scope filter. 'day': shows tasks due on dueDate + overdue (past due, not done) + in-progress (doing).",
         },
         format: {
           type: "string",

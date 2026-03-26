@@ -191,8 +191,31 @@ export const removeTask = (query: string): Promise<Task | undefined> =>
     return task;
   });
 
+const applyDayScope = (tasks: Task[], date: string): Task[] =>
+  tasks.filter(
+    (task) =>
+      task.status === "doing" ||
+      task.dueDate === date ||
+      (task.dueDate !== undefined &&
+        task.dueDate < date &&
+        task.status !== "done"),
+  );
+
+const applyDateFilter = (
+  tasks: Task[],
+  filter: TaskFilter,
+): Task[] => {
+  if (filter.scope === "day" && filter.dueDate !== undefined) {
+    return applyDayScope(tasks, filter.dueDate);
+  }
+  if (filter.dueDate !== undefined) {
+    return tasks.filter((task) => task.dueDate === filter.dueDate);
+  }
+  return tasks;
+};
+
 const applyFilters = (tasks: Task[], filter: TaskFilter): Task[] => {
-  let filtered = tasks;
+  let filtered = applyDateFilter(tasks, filter);
 
   if (filter.status !== undefined && filter.status.length > 0) {
     const statusSet = new Set(filter.status);
@@ -204,10 +227,6 @@ const applyFilters = (tasks: Task[], filter: TaskFilter): Task[] => {
     filtered = filtered.filter(
       (task) => task.tags?.includes(filterTag) === true,
     );
-  }
-
-  if (filter.dueDate !== undefined) {
-    filtered = filtered.filter((task) => task.dueDate === filter.dueDate);
   }
 
   if (filter.parentId !== undefined) {

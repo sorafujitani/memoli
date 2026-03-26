@@ -36,6 +36,7 @@ export const TaskFilterSchema = v.object({
   tag: v.optional(v.string()),
   dueDate: v.optional(v.string()),
   parentId: v.optional(v.string()),
+  scope: v.optional(v.picklist(["day"])),
 });
 
 export const TaskAddOptionsSchema = v.object({
