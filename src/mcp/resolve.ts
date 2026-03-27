@@ -2,15 +2,9 @@ import { formatTaskTree } from "../commands/task/format.ts";
 import { buildTree } from "../store/task-graph.ts";
 import { getTask } from "../store/task-store.ts";
 import type { Task } from "../store/types.ts";
+import { asString } from "./args.ts";
+import { notFound } from "./result.ts";
 import type { McpCallToolResult } from "./types.ts";
-
-const errorResult = (message: string): McpCallToolResult => ({
-  content: [{ type: "text", text: message }],
-  isError: true,
-});
-
-const notFound = (query: string): McpCallToolResult =>
-  errorResult(`Task not found: ${query}`);
 
 type ResolveResult<T> =
   | { ok: true; value: T }
@@ -54,9 +48,6 @@ export const formatTreeText = (tasks: Task[]): string => {
   }
   return formatTaskTree(nodes);
 };
-
-export const asString = (value: unknown): string =>
-  typeof value === "string" ? value : "";
 
 export const resolveParentEdge = async (
   args: Record<string, unknown>,

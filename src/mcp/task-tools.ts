@@ -16,6 +16,7 @@ import {
   parseTaskUpdates,
 } from "./args.ts";
 import { formatTreeText, resolveAllEdges, resolveTaskId } from "./resolve.ts";
+import { errorResult, jsonResult, notFound, textResult } from "./result.ts";
 import type { McpCallToolResult, McpToolDefinition } from "./types.ts";
 
 type ToolHandler = (
@@ -26,22 +27,6 @@ export interface ToolEntry {
   definition: McpToolDefinition;
   handler: ToolHandler;
 }
-
-const jsonResult = (data: unknown): McpCallToolResult => ({
-  content: [{ type: "text", text: JSON.stringify(data) }],
-});
-
-const textResult = (text: string): McpCallToolResult => ({
-  content: [{ type: "text", text }],
-});
-
-const errorResult = (message: string): McpCallToolResult => ({
-  content: [{ type: "text", text: message }],
-  isError: true,
-});
-
-const notFound = (query: string): McpCallToolResult =>
-  errorResult(`Task not found: ${query}`);
 
 // ── task_add ────────────────────────────────────────────────────────
 

@@ -65,12 +65,16 @@ const withStoreMutation = async <T>(
 };
 
 const findTaskById = (store: TaskStore, id: string): Task | undefined => {
-  if (id === "") return undefined;
+  if (id === "") {
+    return undefined;
+  }
   return store.tasks.find((task) => task.id === id || task.id.startsWith(id));
 };
 
 const findTaskByTitle = (store: TaskStore, title: string): Task | undefined => {
-  if (title === "") return undefined;
+  if (title === "") {
+    return undefined;
+  }
   const lower = title.toLowerCase();
   return store.tasks.find((task) => task.title.toLowerCase().includes(lower));
 };
@@ -209,7 +213,7 @@ const applyDateFilter = (
     return applyDayScope(tasks, filter.date);
   }
   if (filter.date !== undefined) {
-    const date = filter.date;
+    const { date } = filter;
     return tasks.filter((task) => task.scheduledDate === date);
   }
   return tasks;
