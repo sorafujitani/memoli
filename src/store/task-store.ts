@@ -64,8 +64,10 @@ const withStoreMutation = async <T>(
   return result;
 };
 
-const findTaskById = (store: TaskStore, id: string): Task | undefined =>
-  store.tasks.find((task) => task.id === id || task.id.startsWith(id));
+const findTaskById = (store: TaskStore, id: string): Task | undefined => {
+  if (id === "") return undefined;
+  return store.tasks.find((task) => task.id === id || task.id.startsWith(id));
+};
 
 const findTaskByTitle = (store: TaskStore, title: string): Task | undefined => {
   if (title === "") return undefined;
