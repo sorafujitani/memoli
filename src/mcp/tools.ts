@@ -6,12 +6,13 @@ import { getTodayDateStr } from "../utils/date.ts";
 import { getTodayFilePath } from "../utils/fs.ts";
 import { asString } from "./args.ts";
 import { errorResult, jsonResult } from "./result.ts";
-import { TASK_TOOLS, type ToolEntry } from "./task-tools.ts";
-import type { McpCallToolResult, McpToolDefinition } from "./types.ts";
-
-type ToolHandler = (
-  args: Record<string, unknown>,
-) => Promise<McpCallToolResult>;
+import { TASK_TOOLS } from "./task-tools.ts";
+import type {
+  McpCallToolResult,
+  McpToolDefinition,
+  ToolEntry,
+  ToolHandler,
+} from "./types.ts";
 
 const dailyReadTool: ToolEntry = {
   definition: {

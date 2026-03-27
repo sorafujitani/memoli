@@ -13,6 +13,13 @@ type Args = Record<string, unknown>;
 export const asString = (value: unknown): string =>
   typeof value === "string" ? value : "";
 
+export const asStringArray = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  return value.filter((item): item is string => typeof item === "string");
+};
+
 const NonEmptyString = v.pipe(v.string(), v.minLength(1));
 const DateString = v.pipe(v.string(), v.check(isValidDateStr));
 

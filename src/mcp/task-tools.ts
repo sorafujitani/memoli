@@ -17,16 +17,7 @@ import {
 } from "./args.ts";
 import { formatTreeText, resolveAllEdges, resolveTaskId } from "./resolve.ts";
 import { errorResult, jsonResult, notFound, textResult } from "./result.ts";
-import type { McpCallToolResult, McpToolDefinition } from "./types.ts";
-
-type ToolHandler = (
-  args: Record<string, unknown>,
-) => Promise<McpCallToolResult>;
-
-export interface ToolEntry {
-  definition: McpToolDefinition;
-  handler: ToolHandler;
-}
+import type { McpCallToolResult, ToolEntry } from "./types.ts";
 
 // ── task_add ────────────────────────────────────────────────────────
 

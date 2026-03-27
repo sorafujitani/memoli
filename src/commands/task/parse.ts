@@ -16,7 +16,7 @@ export const parseTags = (tagsStr: string): string[] =>
     .map((tag) => tag.trim())
     .filter((tag) => tag !== "");
 
-export const parseDueDate = (raw: string | undefined): string | undefined => {
+export const parseDate = (raw: string | undefined): string | undefined => {
   if (raw === undefined) {
     return undefined;
   }

@@ -50,3 +50,12 @@ export interface McpInitializeResult {
   capabilities: { tools: Record<string, never> };
   serverInfo: { name: string; version: string };
 }
+
+export type ToolHandler = (
+  args: Record<string, unknown>,
+) => Promise<McpCallToolResult>;
+
+export interface ToolEntry {
+  definition: McpToolDefinition;
+  handler: ToolHandler;
+}

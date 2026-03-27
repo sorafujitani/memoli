@@ -2,7 +2,7 @@ import { formatTaskTree } from "../commands/task/format.ts";
 import { buildTree } from "../store/task-graph.ts";
 import { getTask } from "../store/task-store.ts";
 import type { Task } from "../store/types.ts";
-import { asString } from "./args.ts";
+import { asString, asStringArray } from "./args.ts";
 import { notFound } from "./result.ts";
 import type { McpCallToolResult } from "./types.ts";
 
@@ -32,13 +32,6 @@ export const resolveTaskIds = async (
     ids.push(result.value);
   }
   return { ok: true, value: ids };
-};
-
-export const asStringArray = (value: unknown): string[] | undefined => {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-  return value.filter((item): item is string => typeof item === "string");
 };
 
 export const formatTreeText = (tasks: Task[]): string => {

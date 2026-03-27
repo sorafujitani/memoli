@@ -23,7 +23,7 @@ import {
 import { outputTask, outputTaskDetail } from "./output.ts";
 import {
   extractTitle,
-  parseDueDate,
+  parseDate,
   parseParentId,
   parsePriority,
   parseTags,
@@ -91,7 +91,7 @@ const handleAdd = async (args: string[], json: boolean): Promise<void> => {
   const task = await addTask(title, {
     priority: parsePriority(parseOption(args, "--priority")),
     tags: tagStr === undefined ? undefined : parseTags(tagStr),
-    scheduledDate: parseDueDate(parseOption(args, "--date")),
+    scheduledDate: parseDate(parseOption(args, "--date")),
     memo: parseOption(args, "--memo"),
     dailyRef: hasFlag(args, "--daily") ? getTodayDateStr() : undefined,
     parentId,
@@ -175,7 +175,7 @@ const buildEditUpdates = (args: string[]): TaskUpdatableFields => {
     "tags",
     tagStr === undefined ? undefined : parseTags(tagStr),
   );
-  setIfDefined(updates, "scheduledDate", parseDueDate(dateRaw));
+  setIfDefined(updates, "scheduledDate", parseDate(dateRaw));
   setIfDefined(updates, "memo", parseOption(args, "--memo"));
   if (parentResult !== undefined) {
     updates.parentId = parentResult.clear ? undefined : parentResult.value;
@@ -234,7 +234,7 @@ const handleList = async (args: string[], json: boolean): Promise<void> => {
     hasFlag(args, "--all"),
   );
   const tag = parseOption(args, "--tag");
-  const date = parseDueDate(parseOption(args, "--date"));
+  const date = parseDate(parseOption(args, "--date"));
   const filter = { status: statusFilter, tag, date };
 
   await (hasFlag(args, "--tree")
@@ -242,23 +242,19 @@ const handleList = async (args: string[], json: boolean): Promise<void> => {
     : printListOutput(filter, json));
 };
 
-const subcommands: Record<
-  string,
-  (args: string[], json: boolean) => Promise<void>
-> = {
+type SubcommandHandler = (args: string[], json: boolean) => Promise<void>;
+
+const withStatus =
+  (status: TaskStatus): SubcommandHandler =>
+  (args, json) =>
+    handleStatusChange(args, status, json);
+
+const subcommands: Record<string, SubcommandHandler> = {
   add: handleAdd,
-  done: async (args, json) => {
-    await handleStatusChange(args, "done", json);
-  },
-  doing: async (args, json) => {
-    await handleStatusChange(args, "doing", json);
-  },
-  block: async (args, json) => {
-    await handleStatusChange(args, "blocked", json);
-  },
-  todo: async (args, json) => {
-    await handleStatusChange(args, "todo", json);
-  },
+  done: withStatus("done"),
+  doing: withStatus("doing"),
+  block: withStatus("blocked"),
+  todo: withStatus("todo"),
   rm: handleRemove,
   show: handleShow,
   edit: handleEdit,
@@ -272,7 +268,7 @@ const resolveHandler = (
 ): {
   handler: (args: string[], json: boolean) => Promise<void>;
   args: string[];
-} => {
+} | undefined => {
   const [subcommand, ...subArgs] = filteredArgs;
   if (subcommand === undefined || subcommand.startsWith("-")) {
     return { handler: handleList, args: filteredArgs };
@@ -281,9 +277,7 @@ const resolveHandler = (
   if (handler !== undefined) {
     return { handler, args: subArgs };
   }
-  console.error(`Unknown task subcommand: ${subcommand}`);
-  showTaskHelp();
-  return process.exit(EXIT_FAILURE);
+  return undefined;
 };
 
 export const task = async (args: string[]): Promise<void> => {
@@ -294,5 +288,10 @@ export const task = async (args: string[]): Promise<void> => {
     return;
   }
   const resolved = resolveHandler(filteredArgs);
+  if (resolved === undefined) {
+    console.error(`Unknown task subcommand: ${filteredArgs[0]}`);
+    showTaskHelp();
+    return process.exit(EXIT_FAILURE);
+  }
   await resolved.handler(resolved.args, json);
 };
