@@ -49,13 +49,13 @@ List Options:
   --all                Show all tasks (including done)
   --status <status>    Filter by status (todo,doing,done,blocked)
   --tag <tag>          Filter by tag
-  --due <date>         Filter by due date (YYYY-MM-DD or "today")
+  --date <date>        Filter by scheduled date (YYYY-MM-DD or "today")
   --tree               Display tasks as a tree
 
 Add/Edit Options:
   --priority <p>       Set priority (high, medium, low)
   --tag <tags>         Set tags (comma-separated)
-  --due <date>         Set due date (YYYY-MM-DD)
+  --date <date>        Set scheduled date (YYYY-MM-DD)
   --memo <name>        Link to memo file
   --daily              Link to today's daily
   --parent <id>        Set parent task (use "none" to remove)
@@ -91,7 +91,7 @@ const handleAdd = async (args: string[], json: boolean): Promise<void> => {
   const task = await addTask(title, {
     priority: parsePriority(parseOption(args, "--priority")),
     tags: tagStr === undefined ? undefined : parseTags(tagStr),
-    dueDate: parseDueDate(parseOption(args, "--due")),
+    scheduledDate: parseDueDate(parseOption(args, "--date")),
     memo: parseOption(args, "--memo"),
     dailyRef: hasFlag(args, "--daily") ? getTodayDateStr() : undefined,
     parentId,
@@ -162,7 +162,7 @@ const setIfDefined = <K extends keyof TaskUpdatableFields>(
 const buildEditUpdates = (args: string[]): TaskUpdatableFields => {
   const updates: TaskUpdatableFields = {};
   const tagStr = parseOption(args, "--tag");
-  const dueDateRaw = parseOption(args, "--due");
+  const dateRaw = parseOption(args, "--date");
   const parentResult = parseParentId(parseOption(args, "--parent"));
   setIfDefined(updates, "title", parseOption(args, "--title"));
   setIfDefined(
@@ -175,7 +175,7 @@ const buildEditUpdates = (args: string[]): TaskUpdatableFields => {
     "tags",
     tagStr === undefined ? undefined : parseTags(tagStr),
   );
-  setIfDefined(updates, "dueDate", parseDueDate(dueDateRaw));
+  setIfDefined(updates, "scheduledDate", parseDueDate(dateRaw));
   setIfDefined(updates, "memo", parseOption(args, "--memo"));
   if (parentResult !== undefined) {
     updates.parentId = parentResult.clear ? undefined : parentResult.value;
@@ -234,8 +234,8 @@ const handleList = async (args: string[], json: boolean): Promise<void> => {
     hasFlag(args, "--all"),
   );
   const tag = parseOption(args, "--tag");
-  const dueDate = parseDueDate(parseOption(args, "--due"));
-  const filter = { status: statusFilter, tag, dueDate };
+  const date = parseDueDate(parseOption(args, "--date"));
+  const filter = { status: statusFilter, tag, date };
 
   await (hasFlag(args, "--tree")
     ? printTreeOutput(filter, json)

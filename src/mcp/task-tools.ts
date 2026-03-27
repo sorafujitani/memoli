@@ -10,6 +10,7 @@ import {
 import { isTaskStatus } from "../store/types.ts";
 import {
   asString,
+  resolveQuery,
   parseTaskAddOptions,
   parseTaskFilter,
   parseTaskUpdates,
@@ -57,7 +58,6 @@ const taskAddTool: ToolEntry = {
         title: { type: "string", description: "Task title" },
         priority: { type: "string", enum: ["high", "medium", "low"] },
         tags: { type: "array", items: { type: "string" } },
-        dueDate: { type: "string", description: "Deadline (YYYY-MM-DD)" },
         scheduledDate: { type: "string", description: "Day to work on this task (YYYY-MM-DD). Default to today." },
         memo: { type: "string", description: "Linked memo name" },
         parent: { type: "string", description: "Parent task (title keyword or ID)" },
@@ -100,10 +100,7 @@ const taskListTool: ToolEntry = {
           description: "Filter by status",
         },
         tag: { type: "string", description: "Filter by tag" },
-        dueDate: {
-          type: "string",
-          description: "Filter by due date (YYYY-MM-DD)",
-        },
+        date: { type: "string", description: "Filter by scheduled date (YYYY-MM-DD)" },
       },
     },
   },
@@ -127,7 +124,7 @@ const taskGetTool: ToolEntry = {
     },
   },
   handler: async (args) => {
-    const query = asString(args["query"]);
+    const query = resolveQuery(args);
     const task = await getTask(query);
     if (task === undefined) {
       return notFound(query);
@@ -156,7 +153,7 @@ const handleStatusUpdate = async (
 const handleTaskUpdate = async (
   args: Record<string, unknown>,
 ): Promise<McpCallToolResult> => {
-  const query = asString(args["query"]);
+  const query = resolveQuery(args);
   const statusResult = await handleStatusUpdate(
     query,
     asString(args["status"]),
@@ -192,7 +189,6 @@ const taskUpdateTool: ToolEntry = {
         },
         priority: { type: "string", enum: ["high", "medium", "low"] },
         tags: { type: "array", items: { type: "string" } },
-        dueDate: { type: "string", description: "Deadline (YYYY-MM-DD)" },
         scheduledDate: { type: "string", description: "Day to work on this task (YYYY-MM-DD)" },
         memo: { type: "string", description: "Link to memo file" },
         parent: {
@@ -227,7 +223,7 @@ const taskRemoveTool: ToolEntry = {
     },
   },
   handler: async (args) => {
-    const query = asString(args["query"]);
+    const query = resolveQuery(args);
     const task = await removeTask(query);
     return task === undefined ? notFound(query) : jsonResult(task);
   },
@@ -241,9 +237,9 @@ const taskTreeTool: ToolEntry = {
     description:
       "Primary tool for listing tasks. Shows tasks as a tree with parent-child relationships. " +
       "Use this by default when the user asks for task list, task overview, or task status. " +
-      "Supports filtering by status, tag, due date, and scope. " +
+      "Supports filtering by status, tag, date, and scope. " +
       "When the user asks for tasks without specifying a scope (e.g. 'タスク一覧', 'タスク'), " +
-      "set scope to 'day' and dueDate to today (YYYY-MM-DD) to show today's scheduled tasks " +
+      "set scope to 'day' and date to today (YYYY-MM-DD) to show today's scheduled tasks " +
       "(tasks with scheduledDate = today + in-progress tasks). " +
       "Only show all tasks when explicitly asked (e.g. '全タスク', 'all tasks') by omitting scope. " +
       "Default: visual tree text. Set format 'json' for structured data. " +
@@ -257,16 +253,14 @@ const taskTreeTool: ToolEntry = {
           description: "Filter by status",
         },
         tag: { type: "string", description: "Filter by tag" },
-        dueDate: {
+        date: {
           type: "string",
-          description:
-            "Filter by due date (YYYY-MM-DD). Required when scope is 'day'.",
+          description: "Target date (YYYY-MM-DD). Required when scope is 'day'.",
         },
         scope: {
           type: "string",
           enum: ["day"],
-          description:
-            "Scope filter. 'day': shows tasks scheduled on dueDate (scheduledDate match) + in-progress (doing).",
+          description: "Scope filter. 'day': shows tasks scheduled for date + in-progress (doing).",
         },
         format: {
           type: "string",

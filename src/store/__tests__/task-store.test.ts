@@ -54,13 +54,13 @@ describe("task store via CLI", () => {
       "high",
       "--tag",
       "work,test",
-      "--due",
+      "--date",
       "2026-12-31",
       "--json",
     );
     expect(task.priority).toBe("high");
     expect(task.tags).toEqual(["work", "test"]);
-    expect(task.dueDate).toBe("2026-12-31");
+    expect(task.scheduledDate).toBe("2026-12-31");
   });
 
   test("task list returns tasks as json", async () => {

@@ -68,6 +68,7 @@ const findTaskById = (store: TaskStore, id: string): Task | undefined =>
   store.tasks.find((task) => task.id === id || task.id.startsWith(id));
 
 const findTaskByTitle = (store: TaskStore, title: string): Task | undefined => {
+  if (title === "") return undefined;
   const lower = title.toLowerCase();
   return store.tasks.find((task) => task.title.toLowerCase().includes(lower));
 };
@@ -195,7 +196,6 @@ const applyDayScope = (tasks: Task[], date: string): Task[] =>
   tasks.filter(
     (task) =>
       task.scheduledDate === date ||
-      (task.scheduledDate === undefined && task.dueDate === date) ||
       task.status === "doing",
   );
 
@@ -203,11 +203,12 @@ const applyDateFilter = (
   tasks: Task[],
   filter: TaskFilter,
 ): Task[] => {
-  if (filter.scope === "day" && filter.dueDate !== undefined) {
-    return applyDayScope(tasks, filter.dueDate);
+  if (filter.scope === "day" && filter.date !== undefined) {
+    return applyDayScope(tasks, filter.date);
   }
-  if (filter.dueDate !== undefined) {
-    return tasks.filter((task) => task.dueDate === filter.dueDate);
+  if (filter.date !== undefined) {
+    const date = filter.date;
+    return tasks.filter((task) => task.scheduledDate === date);
   }
   return tasks;
 };

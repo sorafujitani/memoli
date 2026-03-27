@@ -19,7 +19,6 @@ const DateString = v.pipe(v.string(), v.check(isValidDateStr));
 const TaskAddArgsSchema = v.object({
   priority: v.fallback(v.optional(TaskPrioritySchema), undefined),
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
-  dueDate: v.fallback(v.optional(DateString), undefined),
   scheduledDate: v.fallback(v.optional(DateString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
@@ -28,7 +27,7 @@ const TaskAddArgsSchema = v.object({
 const TaskFilterArgsSchema = v.object({
   status: v.fallback(v.optional(v.array(TaskStatusSchema)), undefined),
   tag: v.fallback(v.optional(NonEmptyString), undefined),
-  dueDate: v.fallback(v.optional(NonEmptyString), undefined),
+  date: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
   scope: v.fallback(v.optional(v.picklist(["day"])), undefined),
 });
@@ -37,11 +36,16 @@ const TaskUpdateArgsSchema = v.object({
   title: v.fallback(v.optional(NonEmptyString), undefined),
   priority: v.fallback(v.optional(TaskPrioritySchema), undefined),
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
-  dueDate: v.fallback(v.optional(NonEmptyString), undefined),
   scheduledDate: v.fallback(v.optional(NonEmptyString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });
+
+/** Resolve query string — falls back to `id` param if `query` is empty */
+export const resolveQuery = (args: Args): string => {
+  const query = asString(args["query"]);
+  return query !== "" ? query : asString(args["id"]);
+};
 
 export const parseTaskAddOptions = (args: Args): TaskAddOptions =>
   v.parse(TaskAddArgsSchema, args);

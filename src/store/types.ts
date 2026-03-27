@@ -21,7 +21,6 @@ export const TaskSchema = v.object({
   dailyRef: v.optional(v.string()),
   createdAt: v.string(),
   updatedAt: v.string(),
-  dueDate: v.optional(v.string()),
   scheduledDate: v.optional(v.string()),
   blockedBy: v.optional(v.array(v.string())),
   parentId: v.optional(v.string()),
@@ -35,7 +34,7 @@ export const TaskStoreSchema = v.object({
 export const TaskFilterSchema = v.object({
   status: v.optional(v.array(TaskStatusSchema)),
   tag: v.optional(v.string()),
-  dueDate: v.optional(v.string()),
+  date: v.optional(v.string()),
   parentId: v.optional(v.string()),
   scope: v.optional(v.picklist(["day"])),
 });
@@ -43,7 +42,6 @@ export const TaskFilterSchema = v.object({
 export const TaskAddOptionsSchema = v.object({
   priority: v.optional(TaskPrioritySchema),
   tags: v.optional(v.array(v.string())),
-  dueDate: v.optional(v.string()),
   scheduledDate: v.optional(v.string()),
   memo: v.optional(v.string()),
   dailyRef: v.optional(v.string()),
@@ -65,7 +63,6 @@ export type TaskUpdatableFields = Partial<
     | "title"
     | "priority"
     | "tags"
-    | "dueDate"
     | "scheduledDate"
     | "memo"
     | "blockedBy"
