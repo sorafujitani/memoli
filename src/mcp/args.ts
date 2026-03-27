@@ -20,6 +20,7 @@ const TaskAddArgsSchema = v.object({
   priority: v.fallback(v.optional(TaskPrioritySchema), undefined),
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
   dueDate: v.fallback(v.optional(DateString), undefined),
+  scheduledDate: v.fallback(v.optional(DateString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });
@@ -37,6 +38,7 @@ const TaskUpdateArgsSchema = v.object({
   priority: v.fallback(v.optional(TaskPrioritySchema), undefined),
   tags: v.fallback(v.optional(v.array(v.string())), undefined),
   dueDate: v.fallback(v.optional(NonEmptyString), undefined),
+  scheduledDate: v.fallback(v.optional(NonEmptyString), undefined),
   memo: v.fallback(v.optional(NonEmptyString), undefined),
   parentId: v.fallback(v.optional(NonEmptyString), undefined),
 });

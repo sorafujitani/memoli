@@ -23,6 +23,9 @@ export const formatTask = (task: Task): string => {
   if (task.dueDate !== undefined) {
     parts.push(`due:${task.dueDate}`);
   }
+  if (task.scheduledDate !== undefined) {
+    parts.push(`@${task.scheduledDate}`);
+  }
   if (task.tags !== undefined && task.tags.length > 0) {
     parts.push(task.tags.map((tag) => `#${tag}`).join(" "));
   }
@@ -37,6 +40,7 @@ interface DetailFieldMapping {
 const OPTIONAL_DETAIL_FIELDS: DetailFieldMapping[] = [
   { label: "Priority", value: (tk) => tk.priority },
   { label: "Due", value: (tk) => tk.dueDate },
+  { label: "Scheduled", value: (tk) => tk.scheduledDate },
   {
     label: "Tags",
     value: (tk) =>

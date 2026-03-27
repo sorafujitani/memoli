@@ -57,12 +57,10 @@ const taskAddTool: ToolEntry = {
         title: { type: "string", description: "Task title" },
         priority: { type: "string", enum: ["high", "medium", "low"] },
         tags: { type: "array", items: { type: "string" } },
-        dueDate: { type: "string", description: "Due date (YYYY-MM-DD)" },
+        dueDate: { type: "string", description: "Deadline (YYYY-MM-DD)" },
+        scheduledDate: { type: "string", description: "Day to work on this task (YYYY-MM-DD). Default to today." },
         memo: { type: "string", description: "Linked memo name" },
-        parent: {
-          type: "string",
-          description: "Parent task (title keyword or ID)",
-        },
+        parent: { type: "string", description: "Parent task (title keyword or ID)" },
       },
       required: ["title"],
     },
@@ -194,7 +192,8 @@ const taskUpdateTool: ToolEntry = {
         },
         priority: { type: "string", enum: ["high", "medium", "low"] },
         tags: { type: "array", items: { type: "string" } },
-        dueDate: { type: "string", description: "Due date (YYYY-MM-DD)" },
+        dueDate: { type: "string", description: "Deadline (YYYY-MM-DD)" },
+        scheduledDate: { type: "string", description: "Day to work on this task (YYYY-MM-DD)" },
         memo: { type: "string", description: "Link to memo file" },
         parent: {
           type: "string",
@@ -244,8 +243,8 @@ const taskTreeTool: ToolEntry = {
       "Use this by default when the user asks for task list, task overview, or task status. " +
       "Supports filtering by status, tag, due date, and scope. " +
       "When the user asks for tasks without specifying a scope (e.g. 'タスク一覧', 'タスク'), " +
-      "set scope to 'day' and dueDate to today (YYYY-MM-DD) to show today's daily view " +
-      "(due today + overdue + in-progress). " +
+      "set scope to 'day' and dueDate to today (YYYY-MM-DD) to show today's scheduled tasks " +
+      "(tasks with scheduledDate = today + in-progress tasks). " +
       "Only show all tasks when explicitly asked (e.g. '全タスク', 'all tasks') by omitting scope. " +
       "Default: visual tree text. Set format 'json' for structured data. " +
       "IMPORTANT: When format is 'text' (default), display the returned tree text as-is in a code block. Do NOT reformat it into a table or other layout.",
@@ -267,7 +266,7 @@ const taskTreeTool: ToolEntry = {
           type: "string",
           enum: ["day"],
           description:
-            "Scope filter. 'day': shows tasks due on dueDate + overdue (past due, not done) + in-progress (doing).",
+            "Scope filter. 'day': shows tasks scheduled on dueDate (scheduledDate match) + in-progress (doing).",
         },
         format: {
           type: "string",

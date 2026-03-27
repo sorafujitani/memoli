@@ -194,11 +194,9 @@ export const removeTask = (query: string): Promise<Task | undefined> =>
 const applyDayScope = (tasks: Task[], date: string): Task[] =>
   tasks.filter(
     (task) =>
-      task.status === "doing" ||
-      task.dueDate === date ||
-      (task.dueDate !== undefined &&
-        task.dueDate < date &&
-        task.status !== "done"),
+      task.scheduledDate === date ||
+      (task.scheduledDate === undefined && task.dueDate === date) ||
+      task.status === "doing",
   );
 
 const applyDateFilter = (

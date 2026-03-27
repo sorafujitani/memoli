@@ -22,6 +22,7 @@ export const TaskSchema = v.object({
   createdAt: v.string(),
   updatedAt: v.string(),
   dueDate: v.optional(v.string()),
+  scheduledDate: v.optional(v.string()),
   blockedBy: v.optional(v.array(v.string())),
   parentId: v.optional(v.string()),
 });
@@ -43,6 +44,7 @@ export const TaskAddOptionsSchema = v.object({
   priority: v.optional(TaskPrioritySchema),
   tags: v.optional(v.array(v.string())),
   dueDate: v.optional(v.string()),
+  scheduledDate: v.optional(v.string()),
   memo: v.optional(v.string()),
   dailyRef: v.optional(v.string()),
   parentId: v.optional(v.string()),
@@ -64,6 +66,7 @@ export type TaskUpdatableFields = Partial<
     | "priority"
     | "tags"
     | "dueDate"
+    | "scheduledDate"
     | "memo"
     | "blockedBy"
     | "dailyRef"
