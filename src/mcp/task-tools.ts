@@ -90,7 +90,8 @@ const taskListTool: ToolEntry = {
     name: "task_list",
     description:
       "List tasks as flat JSON. Use task_tree instead for visual display. " +
-      "This tool is for programmatic access or when structured JSON data is needed.",
+      "This tool is for programmatic access only. " +
+      "When showing results to the user, always use task_tree instead.",
     inputSchema: {
       type: "object",
       properties: {
@@ -243,7 +244,7 @@ const taskTreeTool: ToolEntry = {
       "(tasks with scheduledDate = today + in-progress tasks). " +
       "Only show all tasks when explicitly asked (e.g. '全タスク', 'all tasks') by omitting scope. " +
       "Default: visual tree text. Set format 'json' for structured data. " +
-      "IMPORTANT: When format is 'text' (default), display the returned tree text as-is in a code block. Do NOT reformat it into a table or other layout.",
+      "IMPORTANT: Always display the returned text as-is in a code block. NEVER reformat into tables, bullet lists, or any other layout. This applies even when showing multiple days.",
     inputSchema: {
       type: "object",
       properties: {
